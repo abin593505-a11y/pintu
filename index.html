@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>自适应图片拼图 - 行列分开控制</title>
+    <title>自适应图片拼图 - 高级控制</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
@@ -21,7 +21,7 @@
         }
         
         .container {
-            max-width: 1400px;
+            max-width: 1600px;
             margin: 0 auto;
         }
         
@@ -57,7 +57,7 @@
         
         .controls {
             flex: 1;
-            min-width: 300px;
+            min-width: 350px;
             background: rgba(255, 255, 255, 0.9);
             border-radius: 15px;
             padding: 25px;
@@ -65,8 +65,8 @@
         }
         
         .gallery-container {
-            flex: 2;
-            min-width: 300px;
+            flex: 3;
+            min-width: 500px;
             background: rgba(255, 255, 255, 0.9);
             border-radius: 15px;
             padding: 25px;
@@ -108,7 +108,7 @@
         .slider-container {
             display: flex;
             align-items: center;
-            gap: 15px;
+            gap: 10px;
         }
         
         .slider-container input[type="range"] {
@@ -124,12 +124,18 @@
         .slider-container input[type="range"]::-webkit-slider-thumb {
             -webkit-appearance: none;
             appearance: none;
-            width: 22px;
-            height: 22px;
+            width: 20px;
+            height: 20px;
             border-radius: 50%;
             background: #3498db;
             cursor: pointer;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: all 0.2s ease;
+        }
+        
+        .slider-container input[type="range"]::-webkit-slider-thumb:hover {
+            background: #2980b9;
+            transform: scale(1.1);
         }
         
         .slider-value {
@@ -208,6 +214,29 @@
             background: #d68910;
         }
         
+        #applyToAllBtn {
+            background: #1abc9c;
+        }
+        
+        #applyToAllBtn:hover {
+            background: #16a085;
+        }
+        
+        .spacing-controls {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .spacing-controls h4 {
+            margin-bottom: 15px;
+            color: #2c3e50;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
         .gallery {
             flex: 1;
             display: grid;
@@ -215,7 +244,7 @@
             padding: 10px;
             background: #f8f9fa;
             border-radius: 10px;
-            min-height: 500px;
+            min-height: 600px;
             transition: all 0.3s ease;
             align-items: start;
             justify-items: center;
@@ -228,17 +257,27 @@
             box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
             transition: all 0.3s ease;
             cursor: pointer;
-            width: 100%;
+            display: flex;
+            flex-direction: column;
         }
         
         .gallery-item:hover {
             transform: translateY(-5px);
             box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+            z-index: 10;
         }
         
         .gallery-item.selected {
             outline: 4px solid #3498db;
             transform: scale(1.02);
+        }
+        
+        .gallery-item .image-container {
+            flex: 1;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         
         .gallery-item img {
@@ -258,14 +297,14 @@
             top: 0;
             left: 0;
             right: 0;
-            background: rgba(0, 0, 0, 0.7);
+            background: rgba(0, 0, 0, 0.8);
             padding: 10px;
             display: flex;
-            justify-content: space-between;
-            align-items: center;
+            flex-direction: column;
+            gap: 10px;
             transform: translateY(-100%);
             transition: transform 0.3s ease;
-            z-index: 10;
+            z-index: 20;
         }
         
         .gallery-item:hover .controls-overlay {
@@ -273,6 +312,9 @@
         }
         
         .gallery-item .remove-btn {
+            position: absolute;
+            top: 8px;
+            right: 8px;
             background: rgba(231, 76, 60, 0.9);
             color: white;
             width: 28px;
@@ -282,22 +324,43 @@
             align-items: center;
             justify-content: center;
             cursor: pointer;
+            z-index: 30;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .gallery-item:hover .remove-btn {
+            opacity: 1;
         }
         
         .gallery-item .remove-btn:hover {
             background: #c0392b;
+            transform: scale(1.1);
         }
         
-        .gallery-item .height-control {
+        .size-controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+        
+        .size-control {
+            flex: 1;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 5px;
             color: white;
-            font-size: 0.9rem;
+            font-size: 0.8rem;
         }
         
-        .gallery-item .height-control input {
-            width: 80px;
+        .size-control input {
+            width: 100%;
+        }
+        
+        .size-value {
+            min-width: 40px;
+            text-align: center;
+            font-size: 0.8rem;
         }
         
         .empty-state {
@@ -433,11 +496,27 @@
             margin-top: 20px;
         }
         
-        @media (max-width: 768px) {
+        .image-counter {
+            display: inline-block;
+            background: #3498db;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            margin-left: 5px;
+        }
+        
+        @media (max-width: 1024px) {
             .main-content {
                 flex-direction: column;
             }
             
+            .gallery-container {
+                min-width: 100%;
+            }
+        }
+        
+        @media (max-width: 768px) {
             h1 {
                 font-size: 2rem;
             }
@@ -457,14 +536,19 @@
                 width: 95%;
                 padding: 20px;
             }
+            
+            .size-controls {
+                flex-direction: column;
+                gap: 5px;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1><i class="fas fa-images"></i> 自适应图片拼图 - 行列分开控制</h1>
-            <p class="subtitle">上传多种尺寸的图片，每张图片可单独调整高度，行列数独立控制，创建完美拼图。使用间距控制调整图片间隔，支持拖拽排序和保存功能。</p>
+            <h1><i class="fas fa-images"></i> 高级自适应图片拼图</h1>
+            <p class="subtitle">上传多种尺寸的图片，每张图片可独立调整高度、宽度和间距，创建完美拼图。支持行列独立控制、拖拽排序和保存功能。</p>
         </header>
         
         <div class="main-content">
@@ -489,18 +573,46 @@
                     </div>
                 </div>
                 
-                <div class="control-group">
-                    <label for="spacingSlider"><i class="fas fa-arrows-alt-h"></i> 图片间距: <span id="spacingValue">10</span>px</label>
-                    <div class="slider-container">
-                        <input type="range" id="spacingSlider" min="0" max="30" value="10" step="1">
-                        <div class="slider-value" id="spacingDisplay">10px</div>
+                <div class="spacing-controls">
+                    <h4><i class="fas fa-arrows-alt"></i> 间距控制</h4>
+                    <div class="control-row">
+                        <div class="control-group">
+                            <label for="horizontalSpacingSlider">水平间距: <span id="horizontalSpacingValue">10</span>px</label>
+                            <div class="slider-container">
+                                <input type="range" id="horizontalSpacingSlider" min="0" max="50" value="10" step="1">
+                                <div class="slider-value" id="horizontalSpacingDisplay">10px</div>
+                            </div>
+                        </div>
+                        
+                        <div class="control-group">
+                            <label for="verticalSpacingSlider">垂直间距: <span id="verticalSpacingValue">10</span>px</label>
+                            <div class="slider-container">
+                                <input type="range" id="verticalSpacingSlider" min="0" max="50" value="10" step="1">
+                                <div class="slider-value" id="verticalSpacingDisplay">10px</div>
+                            </div>
+                        </div>
                     </div>
+                </div>
+                
+                <div class="control-group">
+                    <label for="defaultSizeSlider"><i class="fas fa-expand-alt"></i> 默认图片尺寸: <span id="defaultSizeValue">200</span>px</label>
+                    <div class="slider-container">
+                        <input type="range" id="defaultSizeSlider" min="80" max="400" value="200" step="10">
+                        <div class="slider-value" id="defaultSizeDisplay">200px</div>
+                    </div>
+                    <p style="font-size: 0.9rem; color: #7f8c8d; margin-top: 5px;">此设置仅影响新添加的图片</p>
                 </div>
                 
                 <div class="button-group">
                     <button id="addImagesBtn">
                         <i class="fas fa-plus-circle"></i> 添加图片
                     </button>
+                    <button id="applyToAllBtn">
+                        <i class="fas fa-clone"></i> 应用到所有
+                    </button>
+                </div>
+                
+                <div class="button-group">
                     <button id="randomBtn">
                         <i class="fas fa-random"></i> 随机排列
                     </button>
@@ -517,8 +629,8 @@
                     <ul>
                         <li>点击"添加图片"上传本地图片</li>
                         <li>使用列数和行数滑块分别控制拼图布局</li>
-                        <li>使用间距滑块调整图片之间的间隔</li>
-                        <li>每张图片可单独调整高度（鼠标悬停显示控制面板）</li>
+                        <li>每张图片可单独调整高度和宽度（鼠标悬停显示控制面板）</li>
+                        <li>使用"应用到所有"按钮将当前选中图片的尺寸应用到所有图片</li>
                         <li>拖拽图片可以重新排列顺序</li>
                         <li>点击"保存拼图"可将拼图保存为图片</li>
                     </ul>
@@ -526,7 +638,10 @@
             </div>
             
             <div class="gallery-container">
-                <h2 class="section-title"><i class="fas fa-th"></i> 拼图预览 (最多<span id="maxImages">9</span>张)</h2>
+                <h2 class="section-title">
+                    <i class="fas fa-th"></i> 拼图预览 
+                    <span class="image-counter" id="imageCounter">0/9</span>
+                </h2>
                 <div class="gallery" id="gallery">
                     <div class="empty-state" id="emptyState">
                         <i class="fas fa-cloud-upload-alt"></i>
@@ -580,7 +695,7 @@
         </div>
         
         <footer>
-            <p>自适应图片拼图 &copy; 2023 | 行列独立控制 | 每张图片单独调整高度 | 可调节间距 | 保存功能</p>
+            <p>高级自适应图片拼图 &copy; 2023 | 行列独立控制 | 图片尺寸独立调整 | 优化间距控制 | 保存功能</p>
         </footer>
     </div>
     
@@ -588,17 +703,24 @@
         // 获取DOM元素
         const gallery = document.getElementById('gallery');
         const emptyState = document.getElementById('emptyState');
-        const spacingSlider = document.getElementById('spacingSlider');
-        const spacingDisplay = document.getElementById('spacingDisplay');
-        const spacingValue = document.getElementById('spacingValue');
         const columnsSlider = document.getElementById('columnsSlider');
         const columnsDisplay = document.getElementById('columnsDisplay');
         const columnsValue = document.getElementById('columnsValue');
         const rowsSlider = document.getElementById('rowsSlider');
         const rowsDisplay = document.getElementById('rowsDisplay');
         const rowsValue = document.getElementById('rowsValue');
-        const maxImagesElement = document.getElementById('maxImages');
+        const horizontalSpacingSlider = document.getElementById('horizontalSpacingSlider');
+        const horizontalSpacingDisplay = document.getElementById('horizontalSpacingDisplay');
+        const horizontalSpacingValue = document.getElementById('horizontalSpacingValue');
+        const verticalSpacingSlider = document.getElementById('verticalSpacingSlider');
+        const verticalSpacingDisplay = document.getElementById('verticalSpacingDisplay');
+        const verticalSpacingValue = document.getElementById('verticalSpacingValue');
+        const defaultSizeSlider = document.getElementById('defaultSizeSlider');
+        const defaultSizeDisplay = document.getElementById('defaultSizeDisplay');
+        const defaultSizeValue = document.getElementById('defaultSizeValue');
+        const imageCounter = document.getElementById('imageCounter');
         const addImagesBtn = document.getElementById('addImagesBtn');
+        const applyToAllBtn = document.getElementById('applyToAllBtn');
         const clearBtn = document.getElementById('clearBtn');
         const randomBtn = document.getElementById('randomBtn');
         const saveBtn = document.getElementById('saveBtn');
@@ -610,13 +732,14 @@
         let images = [];
         let selectedImages = new Set();
         let selectedSaveFormat = 'png';
+        let defaultSize = 200;
         
-        // 更新最大图片数量显示
-        function updateMaxImages() {
+        // 更新图片计数器
+        function updateImageCounter() {
             const columns = parseInt(columnsSlider.value);
             const rows = parseInt(rowsSlider.value);
             const maxImages = columns * rows;
-            maxImagesElement.textContent = maxImages;
+            imageCounter.textContent = `${images.length}/${maxImages}`;
             return maxImages;
         }
         
@@ -632,15 +755,16 @@
             
             emptyState.style.display = 'none';
             
-            // 获取行列设置
+            // 获取布局设置
             const columns = parseInt(columnsSlider.value);
             const rows = parseInt(rowsSlider.value);
-            const spacing = parseInt(spacingSlider.value);
+            const horizontalSpacing = parseInt(horizontalSpacingSlider.value);
+            const verticalSpacing = parseInt(verticalSpacingSlider.value);
             
             // 设置网格布局
             gallery.style.gridTemplateColumns = `repeat(${columns}, 1fr)`;
             gallery.style.gridTemplateRows = `repeat(${rows}, auto)`;
-            gallery.style.gap = `${spacing}px`;
+            gallery.style.gap = `${verticalSpacing}px ${horizontalSpacing}px`;
             
             // 计算网格总大小
             const maxImages = columns * rows;
@@ -668,6 +792,9 @@
                 }
             }
             
+            // 更新计数器
+            updateImageCounter();
+            
             // 添加拖放区域事件监听
             setupDragAndDrop();
         }
@@ -679,11 +806,13 @@
             item.dataset.id = image.id;
             item.dataset.index = index;
             
-            // 设置自定义高度
-            if (image.customHeight) {
+            // 设置自定义尺寸
+            if (image.customWidth && image.customHeight) {
+                item.style.width = `${image.customWidth}px`;
                 item.style.height = `${image.customHeight}px`;
             } else {
-                item.style.height = '200px';
+                item.style.width = `${defaultSize}px`;
+                item.style.height = `${defaultSize}px`;
             }
             
             if (selectedImages.has(image.id)) {
@@ -691,10 +820,10 @@
             }
             
             // 创建图片容器
-            const imgContainer = document.createElement('div');
-            imgContainer.style.height = '100%';
-            imgContainer.style.overflow = 'hidden';
-            imgContainer.style.width = '100%';
+            const imageContainer = document.createElement('div');
+            imageContainer.className = 'image-container';
+            imageContainer.style.width = '100%';
+            imageContainer.style.height = '100%';
             
             // 创建图片
             const img = document.createElement('img');
@@ -706,6 +835,74 @@
             const controlsOverlay = document.createElement('div');
             controlsOverlay.className = 'controls-overlay';
             
+            // 创建尺寸控制
+            const sizeControls = document.createElement('div');
+            sizeControls.className = 'size-controls';
+            
+            // 宽度控制
+            const widthControl = document.createElement('div');
+            widthControl.className = 'size-control';
+            
+            const widthLabel = document.createElement('span');
+            widthLabel.textContent = '宽:';
+            widthLabel.style.color = 'white';
+            
+            const widthInput = document.createElement('input');
+            widthInput.type = 'range';
+            widthInput.min = '80';
+            widthInput.max = '500';
+            widthInput.value = image.customWidth || defaultSize;
+            widthInput.step = '10';
+            
+            const widthValue = document.createElement('span');
+            widthValue.className = 'size-value';
+            widthValue.textContent = `${widthInput.value}px`;
+            widthValue.style.color = 'white';
+            
+            widthInput.addEventListener('input', () => {
+                widthValue.textContent = `${widthInput.value}px`;
+                image.customWidth = parseInt(widthInput.value);
+                item.style.width = `${widthInput.value}px`;
+            });
+            
+            widthControl.appendChild(widthLabel);
+            widthControl.appendChild(widthInput);
+            widthControl.appendChild(widthValue);
+            
+            // 高度控制
+            const heightControl = document.createElement('div');
+            heightControl.className = 'size-control';
+            
+            const heightLabel = document.createElement('span');
+            heightLabel.textContent = '高:';
+            heightLabel.style.color = 'white';
+            
+            const heightInput = document.createElement('input');
+            heightInput.type = 'range';
+            heightInput.min = '80';
+            heightInput.max = '500';
+            heightInput.value = image.customHeight || defaultSize;
+            heightInput.step = '10';
+            
+            const heightValue = document.createElement('span');
+            heightValue.className = 'size-value';
+            heightValue.textContent = `${heightInput.value}px`;
+            heightValue.style.color = 'white';
+            
+            heightInput.addEventListener('input', () => {
+                heightValue.textContent = `${heightInput.value}px`;
+                image.customHeight = parseInt(heightInput.value);
+                item.style.height = `${heightInput.value}px`;
+            });
+            
+            heightControl.appendChild(heightLabel);
+            heightControl.appendChild(heightInput);
+            heightControl.appendChild(heightValue);
+            
+            sizeControls.appendChild(widthControl);
+            sizeControls.appendChild(heightControl);
+            controlsOverlay.appendChild(sizeControls);
+            
             // 创建删除按钮
             const removeBtn = document.createElement('div');
             removeBtn.className = 'remove-btn';
@@ -715,41 +912,10 @@
                 removeImage(image.id);
             });
             
-            // 创建高度控制
-            const heightControl = document.createElement('div');
-            heightControl.className = 'height-control';
-            
-            const heightLabel = document.createElement('span');
-            heightLabel.textContent = '高度:';
-            
-            const heightInput = document.createElement('input');
-            heightInput.type = 'range';
-            heightInput.min = '80';
-            heightInput.max = '400';
-            heightInput.value = image.customHeight || '200';
-            heightInput.step = '10';
-            heightInput.style.width = '80px';
-            
-            const heightValue = document.createElement('span');
-            heightValue.textContent = `${heightInput.value}px`;
-            
-            heightInput.addEventListener('input', () => {
-                heightValue.textContent = `${heightInput.value}px`;
-                image.customHeight = parseInt(heightInput.value);
-                item.style.height = `${heightInput.value}px`;
-                imgContainer.style.height = `${heightInput.value}px`;
-            });
-            
-            heightControl.appendChild(heightLabel);
-            heightControl.appendChild(heightInput);
-            heightControl.appendChild(heightValue);
-            
-            controlsOverlay.appendChild(removeBtn);
-            controlsOverlay.appendChild(heightControl);
-            
             // 点击选择/取消选择图片
             item.addEventListener('click', (e) => {
-                if (e.target === removeBtn || e.target === heightInput || e.target.closest('.height-control')) {
+                if (e.target === removeBtn || e.target === widthInput || 
+                    e.target === heightInput || e.target.closest('.size-control')) {
                     return;
                 }
                 
@@ -768,9 +934,10 @@
                 item.classList.remove('dragging');
             });
             
-            imgContainer.appendChild(img);
-            item.appendChild(imgContainer);
+            imageContainer.appendChild(img);
+            item.appendChild(imageContainer);
             item.appendChild(controlsOverlay);
+            item.appendChild(removeBtn);
             
             return item;
         }
@@ -883,7 +1050,7 @@
             
             input.addEventListener('change', (e) => {
                 const files = Array.from(e.target.files);
-                const maxImages = updateMaxImages();
+                const maxImages = updateImageCounter();
                 
                 // 检查图片数量是否超过限制
                 if (images.length + files.length > maxImages) {
@@ -899,7 +1066,8 @@
                             id: `uploaded-${Date.now()}-${index}`,
                             url: event.target.result,
                             name: file.name,
-                            customHeight: 200 // 默认高度
+                            customWidth: defaultSize,
+                            customHeight: defaultSize
                         };
                         
                         images.push(newImage);
@@ -915,6 +1083,37 @@
             });
             
             input.click();
+        }
+        
+        // 应用到所有图片
+        function applyToAllImages() {
+            if (images.length === 0) {
+                alert('请先添加图片！');
+                return;
+            }
+            
+            if (selectedImages.size === 0) {
+                alert('请先选择一张图片作为参考！');
+                return;
+            }
+            
+            // 获取第一张选中图片的尺寸
+            const selectedId = Array.from(selectedImages)[0];
+            const selectedImage = images.find(img => img.id === selectedId);
+            
+            if (!selectedImage) return;
+            
+            const width = selectedImage.customWidth || defaultSize;
+            const height = selectedImage.customHeight || defaultSize;
+            
+            // 应用到所有图片
+            images.forEach(image => {
+                image.customWidth = width;
+                image.customHeight = height;
+            });
+            
+            renderGallery();
+            alert(`已将尺寸设置(宽:${width}px, 高:${height}px)应用到所有图片`);
         }
         
         // 清空所有图片
@@ -962,15 +1161,18 @@
             // 获取布局参数
             const columns = parseInt(columnsSlider.value);
             const rows = parseInt(rowsSlider.value);
-            const spacing = parseInt(spacingSlider.value);
+            const horizontalSpacing = parseInt(horizontalSpacingSlider.value);
+            const verticalSpacing = parseInt(verticalSpacingSlider.value);
             const maxImages = columns * rows;
-            
-            // 计算每列最大宽度和每行最大高度
-            let columnWidths = new Array(columns).fill(0);
-            let rowHeights = new Array(rows).fill(0);
             
             // 只处理实际存在的图片
             const imagesToProcess = images.slice(0, Math.min(images.length, maxImages));
+            
+            // 计算总宽度和高度
+            let totalWidth = 0;
+            let totalHeight = 0;
+            let rowWidths = new Array(rows).fill(0);
+            let rowHeights = new Array(rows).fill(0);
             
             // 创建图片加载promise数组
             const imagePromises = imagesToProcess.map((image, index) => {
@@ -983,21 +1185,24 @@
                         const col = index % columns;
                         const row = Math.floor(index / columns);
                         
-                        // 获取图片原始尺寸
-                        const aspectRatio = img.width / img.height;
-                        const targetHeight = image.customHeight || 200;
-                        const targetWidth = targetHeight * aspectRatio;
+                        // 获取图片尺寸
+                        const width = image.customWidth || defaultSize;
+                        const height = image.customHeight || defaultSize;
                         
-                        // 更新列宽和行高
-                        columnWidths[col] = Math.max(columnWidths[col], targetWidth);
-                        rowHeights[row] = Math.max(rowHeights[row], targetHeight);
+                        // 更新行宽和行高
+                        rowWidths[row] += width;
+                        if (col === columns - 1) {
+                            rowWidths[row] += (columns - 1) * horizontalSpacing;
+                        }
                         
-                        resolve({img, image, index});
+                        rowHeights[row] = Math.max(rowHeights[row], height);
+                        
+                        resolve({img, image, index, width, height});
                     };
                     
                     img.onerror = () => {
                         console.error(`图片加载失败: ${image.name}`);
-                        resolve(null); // 即使失败也继续
+                        resolve(null);
                     };
                 });
             });
@@ -1008,8 +1213,10 @@
                 const validResults = results.filter(r => r !== null);
                 
                 // 计算总宽度和高度
-                const totalWidth = columnWidths.reduce((sum, width) => sum + width, 0) + (columns - 1) * spacing;
-                const totalHeight = rowHeights.reduce((sum, height) => sum + height, 0) + (rows - 1) * spacing;
+                totalWidth = Math.max(...rowWidths);
+                totalHeight = rowHeights.reduce((sum, height, index) => {
+                    return sum + height + (index < rows - 1 ? verticalSpacing : 0);
+                }, 0);
                 
                 // 设置canvas尺寸
                 canvas.width = totalWidth;
@@ -1020,39 +1227,43 @@
                 ctx.fillRect(0, 0, totalWidth, totalHeight);
                 
                 // 绘制每张图片
-                let xPos = 0;
                 let yPos = 0;
-                let currentRow = 0;
                 
-                validResults.forEach((result, i) => {
-                    const {img, image, index} = result;
-                    const col = index % columns;
-                    const row = Math.floor(index / columns);
+                for (let row = 0; row < rows; row++) {
+                    let xPos = 0;
+                    const rowHeight = rowHeights[row];
                     
-                    // 如果换行，重置xPos并增加yPos
-                    if (row > currentRow) {
-                        xPos = 0;
-                        yPos += rowHeights[currentRow] + spacing;
-                        currentRow = row;
-                    }
+                    // 计算该行的图片
+                    const rowImages = validResults.filter(result => {
+                        const resultRow = Math.floor(result.index / columns);
+                        return resultRow === row;
+                    });
                     
-                    // 计算调整后的尺寸
-                    const aspectRatio = img.width / img.height;
-                    const targetHeight = image.customHeight || 200;
-                    const targetWidth = targetHeight * aspectRatio;
+                    // 计算该行总宽度
+                    const rowTotalWidth = rowImages.reduce((sum, result) => {
+                        return sum + result.width;
+                    }, 0) + (rowImages.length - 1) * horizontalSpacing;
                     
-                    // 计算图片在网格中的位置（居中显示）
-                    const cellWidth = columnWidths[col];
-                    const cellHeight = rowHeights[row];
-                    const xOffset = (cellWidth - targetWidth) / 2;
-                    const yOffset = (cellHeight - targetHeight) / 2;
+                    // 计算起始x位置（居中）
+                    xPos = (totalWidth - rowTotalWidth) / 2;
                     
-                    // 绘制图片
-                    ctx.drawImage(img, xPos + xOffset, yPos + yOffset, targetWidth, targetHeight);
+                    // 绘制该行的图片
+                    rowImages.forEach((result) => {
+                        const {img, width, height} = result;
+                        
+                        // 计算垂直居中
+                        const yOffset = (rowHeight - height) / 2;
+                        
+                        // 绘制图片
+                        ctx.drawImage(img, xPos, yPos + yOffset, width, height);
+                        
+                        // 更新x位置
+                        xPos += width + horizontalSpacing;
+                    });
                     
-                    // 更新xPos
-                    xPos += cellWidth + spacing;
-                });
+                    // 更新y位置
+                    yPos += rowHeight + verticalSpacing;
+                }
                 
                 // 执行保存操作
                 if (selectedSaveFormat === 'dataURL') {
@@ -1086,25 +1297,13 @@
             });
         }
         
-        // 更新间距显示
-        function updateSpacingDisplay() {
-            const value = spacingSlider.value;
-            spacingDisplay.textContent = `${value}px`;
-            spacingValue.textContent = value;
-            
-            // 更新拼图间距
-            if (images.length > 0) {
-                gallery.style.gap = `${value}px`;
-            }
-        }
-        
         // 更新列数显示
         function updateColumnsDisplay() {
             const value = columnsSlider.value;
             columnsDisplay.textContent = value;
             columnsValue.textContent = value;
             
-            updateMaxImages();
+            updateImageCounter();
             
             // 更新拼图布局
             if (images.length > 0) {
@@ -1118,12 +1317,46 @@
             rowsDisplay.textContent = value;
             rowsValue.textContent = value;
             
-            updateMaxImages();
+            updateImageCounter();
             
             // 更新拼图布局
             if (images.length > 0) {
                 renderGallery();
             }
+        }
+        
+        // 更新水平间距显示
+        function updateHorizontalSpacingDisplay() {
+            const value = horizontalSpacingSlider.value;
+            horizontalSpacingDisplay.textContent = `${value}px`;
+            horizontalSpacingValue.textContent = value;
+            
+            // 更新拼图间距
+            if (images.length > 0) {
+                const verticalSpacing = parseInt(verticalSpacingSlider.value);
+                gallery.style.gap = `${verticalSpacing}px ${value}px`;
+            }
+        }
+        
+        // 更新垂直间距显示
+        function updateVerticalSpacingDisplay() {
+            const value = verticalSpacingSlider.value;
+            verticalSpacingDisplay.textContent = `${value}px`;
+            verticalSpacingValue.textContent = value;
+            
+            // 更新拼图间距
+            if (images.length > 0) {
+                const horizontalSpacing = parseInt(horizontalSpacingSlider.value);
+                gallery.style.gap = `${value}px ${horizontalSpacing}px`;
+            }
+        }
+        
+        // 更新默认尺寸显示
+        function updateDefaultSizeDisplay() {
+            const value = defaultSizeSlider.value;
+            defaultSizeDisplay.textContent = `${value}px`;
+            defaultSizeValue.textContent = value;
+            defaultSize = parseInt(value);
         }
         
         // 设置保存格式选择
@@ -1142,10 +1375,13 @@
         }
         
         // 事件监听
-        spacingSlider.addEventListener('input', updateSpacingDisplay);
         columnsSlider.addEventListener('input', updateColumnsDisplay);
         rowsSlider.addEventListener('input', updateRowsDisplay);
+        horizontalSpacingSlider.addEventListener('input', updateHorizontalSpacingDisplay);
+        verticalSpacingSlider.addEventListener('input', updateVerticalSpacingDisplay);
+        defaultSizeSlider.addEventListener('input', updateDefaultSizeDisplay);
         addImagesBtn.addEventListener('click', addImages);
+        applyToAllBtn.addEventListener('click', applyToAllImages);
         clearBtn.addEventListener('click', clearAllImages);
         randomBtn.addEventListener('click', randomizeImages);
         saveBtn.addEventListener('click', saveCollage);
@@ -1164,7 +1400,8 @@
         // 初始化
         document.addEventListener('DOMContentLoaded', () => {
             setupSaveOptions();
-            updateMaxImages();
+            updateImageCounter();
+            updateDefaultSizeDisplay();
             renderGallery(); // 初始为空状态
         });
     </script>
