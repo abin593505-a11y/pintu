@@ -60,6 +60,7 @@
             flex-direction: column;
             position: relative;
             background-color: #f0f2f5;
+            overflow: hidden;
         }
         .control-section {
             margin-bottom: 30px;
@@ -126,6 +127,70 @@
             background-color: white;
             transform-origin: 0 0;
         }
+        .resize-border {
+            position: absolute;
+            background-color: transparent;
+            z-index: 50;
+        }
+        .resize-border.top {
+            top: 0;
+            left: 10px;
+            right: 10px;
+            height: 10px;
+            cursor: ns-resize;
+        }
+        .resize-border.right {
+            top: 10px;
+            right: 0;
+            bottom: 10px;
+            width: 10px;
+            cursor: ew-resize;
+        }
+        .resize-border.bottom {
+            bottom: 0;
+            left: 10px;
+            right: 10px;
+            height: 10px;
+            cursor: ns-resize;
+        }
+        .resize-border.left {
+            top: 10px;
+            left: 0;
+            bottom: 10px;
+            width: 10px;
+            cursor: ew-resize;
+        }
+        .resize-border:hover {
+            background-color: rgba(52, 152, 219, 0.2);
+        }
+        .resize-corner {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background-color: #3498db;
+            border-radius: 50%;
+            z-index: 100;
+        }
+        .resize-corner.br {
+            bottom: -5px;
+            right: -5px;
+            cursor: nwse-resize;
+        }
+        .resize-corner.bl {
+            bottom: -5px;
+            left: -5px;
+            cursor: nesw-resize;
+        }
+        .resize-corner.tr {
+            top: -5px;
+            right: -5px;
+            cursor: nesw-resize;
+        }
+        .resize-corner.tl {
+            top: -5px;
+            left: -5px;
+            cursor: nwse-resize;
+        }
         .img-item {
             position: absolute;
             cursor: move;
@@ -188,6 +253,26 @@
             margin-top: 15px;
             font-family: monospace;
         }
+        .canvas-size-inputs {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .canvas-size-inputs input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            text-align: center;
+        }
+        .canvas-size-inputs button {
+            padding: 10px 15px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
         @media (max-width: 768px) {
             .content-wrapper {
                 flex-direction: column;
@@ -206,7 +291,7 @@
     <div class="container">
         <header>
             <h1>🖼️ 图片自由拼接工具</h1>
-            <p class="subtitle">增强版 | 支持自由拖拽画布、图片缩放旋转 | 所有操作均在本地浏览器完成，安全私密</p>
+            <p class="subtitle">增强版 | 支持鼠标拖动边界调整画布 | 所有操作均在本地浏览器完成</p>
         </header>
         <div class="content-wrapper">
             <div class="control-panel">
@@ -219,13 +304,18 @@
                 <div class="control-section">
                     <h2>🎛️ 画布控制</h2>
                     <div class="canvas-controls">
-                        <button class="btn btn-info" id="zoom-in-btn">放大画布</button>
-                        <button class="btn btn-info" id="zoom-out-btn">缩小画布</button>
+                        <button class="btn btn-info" id="zoom-in-btn">放大视图</button>
+                        <button class="btn btn-info" id="zoom-out-btn">缩小视图</button>
                         <button class="btn btn-info" id="reset-view-btn">重置视图</button>
                     </div>
                     <div class="canvas-stats">
-                        画布缩放: <span id="scale-display">100%</span> | 
+                        视图缩放: <span id="scale-display">100%</span> | 
                         图片数量: <span id="image-count">0</span>
+                    </div>
+                    <div class="canvas-size-inputs">
+                        <input type="number" id="canvas-width-input" placeholder="宽度" min="100" max="5000">
+                        <input type="number" id="canvas-height-input" placeholder="高度" min="100" max="5000">
+                        <button id="apply-canvas-size">应用</button>
                     </div>
                 </div>
                 <div class="control-section">
@@ -238,9 +328,9 @@
                 <div class="info-panel">
                     <h3>使用说明 📖</h3>
                     <ul>
-                        <li><span class="icon">🖱️</span><strong>画布导航</strong>：拖拽画布背景可移动视图，使用鼠标滚轮可缩放整个画布。</li>
+                        <li><span class="icon">🖱️</span><strong>画布调整</strong>：直接拖动画布的<strong>四条边</strong>可以调整尺寸，拖动<strong>四个角</strong>可同时调整宽高。</li>
+                        <li><span class="icon">🎯</span><strong>画布导航</strong>：拖拽画布背景可移动视图，使用鼠标滚轮可缩放整个画布视图。</li>
                         <li><span class="icon">📎</span><strong>图片操作</strong>：拖拽图片移动位置，鼠标滚轮缩放图片，拖动边角旋转图片。</li>
-                        <li><span class="icon">⚙️</span><strong>画布调整</strong>：通过右下角拖动可调整画布实际大小（导出分辨率）。</li>
                         <li><span class="icon">💡</span><strong>提示</strong>：点击图片可将其置顶激活，右键点击图片可删除。</li>
                     </ul>
                 </div>
@@ -249,10 +339,20 @@
                 <h2>🎨 拼接画布</h2>
                 <div id="canvas-container">
                     <canvas id="main-canvas"></canvas>
+                    <!-- 画布调整边界 -->
+                    <div class="resize-border top" data-edge="top"></div>
+                    <div class="resize-border right" data-edge="right"></div>
+                    <div class="resize-border bottom" data-edge="bottom"></div>
+                    <div class="resize-border left" data-edge="left"></div>
+                    <!-- 画布调整角 -->
+                    <div class="resize-corner tl" data-corner="tl"></div>
+                    <div class="resize-corner tr" data-corner="tr"></div>
+                    <div class="resize-corner bl" data-corner="bl"></div>
+                    <div class="resize-corner br" data-corner="br"></div>
                 </div>
                 <div style="margin-top: 15px; text-align: center; color: #666;">
                     <p>当前画布尺寸：<span id="canvas-size-display">1200 × 800</span> | 
-                    拖动画布右下角调整尺寸</p>
+                    直接拖动画布边界调整尺寸</p>
                 </div>
             </div>
         </div>
@@ -272,6 +372,14 @@
         const scaleDisplay = document.getElementById('scale-display');
         const imageCountDisplay = document.getElementById('image-count');
         const canvasSizeDisplay = document.getElementById('canvas-size-display');
+        const canvasWidthInput = document.getElementById('canvas-width-input');
+        const canvasHeightInput = document.getElementById('canvas-height-input');
+        const applyCanvasSizeBtn = document.getElementById('apply-canvas-size');
+        
+        // 获取所有调整边界和角的元素
+        const resizeBorders = document.querySelectorAll('.resize-border');
+        const resizeCorners = document.querySelectorAll('.resize-corner');
+        
         // 状态管理
         let images = [];
         let activeImageIndex = -1;
@@ -284,14 +392,20 @@
         let isDraggingCanvas = false;
         let dragStartX, dragStartY;
         let originalOffsetX, originalOffsetY;
-        let isResizingCanvas = false;
-        let resizingStartX, resizingStartY;
+        let isResizingCanvasEdge = false;
+        let resizeEdge = '';
+        let resizeStartX, resizeStartY;
         let originalCanvasWidth, originalCanvasHeight;
+        let isResizingCanvasCorner = false;
+        let resizeCorner = '';
+
         // 初始化
         function init() {
             canvas.width = canvasWidth;
             canvas.height = canvasHeight;
             updateCanvasSizeDisplay();
+            updateCanvasSizeInputs();
+            
             // 事件监听器
             selectImageBtn.addEventListener('click', () => imageInput.click());
             imageInput.addEventListener('change', handleImageUpload);
@@ -300,17 +414,29 @@
             zoomInBtn.addEventListener('click', () => adjustCanvasScale(0.1));
             zoomOutBtn.addEventListener('click', () => adjustCanvasScale(-0.1));
             resetViewBtn.addEventListener('click', resetView);
+            applyCanvasSizeBtn.addEventListener('click', applyCanvasSizeFromInput);
+            
             // 画布交互事件
             canvas.addEventListener('mousedown', startDrag);
             canvas.addEventListener('wheel', handleWheel);
             document.addEventListener('mousemove', handleDrag);
             document.addEventListener('mouseup', stopDrag);
+            
             // 右键菜单
             canvas.addEventListener('contextmenu', handleRightClick);
-            // 画布调整大小句柄
-            createResizeHandle();
+            
+            // 画布边界调整事件
+            resizeBorders.forEach(border => {
+                border.addEventListener('mousedown', startResizeEdge);
+            });
+            
+            resizeCorners.forEach(corner => {
+                corner.addEventListener('mousedown', startResizeCorner);
+            });
+            
             draw();
         }
+
         // 处理图片上传
         function handleImageUpload(event) {
             const files = event.target.files;
@@ -342,11 +468,14 @@
             }
             imageInput.value = '';
         }
+
         // 绘制函数
         function draw() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
             // 绘制背景网格
             drawGrid();
+            
             // 绘制所有图片
             images.forEach((imgObj, index) => {
                 ctx.save();
@@ -360,23 +489,28 @@
                     imgObj.height
                 );
                 ctx.restore();
+                
                 // 高亮激活的图片
                 if (index === activeImageIndex) {
                     ctx.strokeStyle = '#e74c3c';
                     ctx.lineWidth = 3;
                     ctx.strokeRect(imgObj.x, imgObj.y, imgObj.width, imgObj.height);
+                    
                     // 绘制旋转控制点
                     drawRotationHandle(imgObj.x + imgObj.width / 2, imgObj.y - 30, imgObj);
                 }
             });
-            // 绘制画布调整句柄
-            drawResizeHandle();
+            
+            // 绘制当前画布边界
+            drawCanvasBorder();
         }
+
         // 绘制背景网格
         function drawGrid() {
             const gridSize = 20;
             ctx.strokeStyle = '#f0f0f0';
             ctx.lineWidth = 1;
+            
             // 垂直线
             for (let x = 0; x <= canvas.width; x += gridSize) {
                 ctx.beginPath();
@@ -384,6 +518,7 @@
                 ctx.lineTo(x, canvas.height);
                 ctx.stroke();
             }
+            
             // 水平线
             for (let y = 0; y <= canvas.height; y += gridSize) {
                 ctx.beginPath();
@@ -392,12 +527,23 @@
                 ctx.stroke();
             }
         }
+
+        // 绘制画布边界
+        function drawCanvasBorder() {
+            ctx.strokeStyle = '#3498db';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([5, 5]);
+            ctx.strokeRect(0, 0, canvas.width, canvas.height);
+            ctx.setLineDash([]);
+        }
+
         // 绘制旋转控制点
         function drawRotationHandle(x, y, imgObj) {
             ctx.fillStyle = '#3498db';
             ctx.beginPath();
             ctx.arc(x, y, 8, 0, Math.PI * 2);
             ctx.fill();
+            
             ctx.strokeStyle = '#3498db';
             ctx.lineWidth = 2;
             ctx.beginPath();
@@ -405,11 +551,13 @@
             ctx.lineTo(x, imgObj.y + 5);
             ctx.stroke();
         }
+
         // 开始拖拽
         function startDrag(e) {
             const rect = canvas.getBoundingClientRect();
             const x = (e.clientX - rect.left - offsetX) / currentScale;
             const y = (e.clientY - rect.top - offsetY) / currentScale;
+            
             // 检查是否点击了图片
             for (let i = images.length - 1; i >= 0; i--) {
                 const img = images[i];
@@ -424,6 +572,7 @@
                         draw();
                         return;
                     }
+                    
                     // 检查是否点击了边角进行缩放
                     const corners = [
                         {x: img.x, y: img.y},
@@ -431,6 +580,7 @@
                         {x: img.x, y: img.y + img.height},
                         {x: img.x + img.width, y: img.y + img.height}
                     ];
+                    
                     for (const corner of corners) {
                         if (Math.sqrt(Math.pow(x - corner.x, 2) + Math.pow(y - corner.y, 2)) < 10) {
                             img.isResizing = true;
@@ -440,6 +590,7 @@
                             return;
                         }
                     }
+                    
                     // 普通拖拽图片
                     img.isDragging = true;
                     activeImageIndex = i;
@@ -448,17 +599,7 @@
                     return;
                 }
             }
-            // 检查是否点击了调整画布大小的句柄
-            const handleX = canvas.width;
-            const handleY = canvas.height;
-            if (Math.sqrt(Math.pow(x - handleX, 2) + Math.pow(y - handleY, 2)) < 20) {
-                isResizingCanvas = true;
-                resizingStartX = e.clientX;
-                resizingStartY = e.clientY;
-                originalCanvasWidth = canvasWidth;
-                originalCanvasHeight = canvasHeight;
-                return;
-            }
+            
             // 拖拽画布视图
             isDraggingCanvas = true;
             dragStartX = e.clientX;
@@ -467,28 +608,92 @@
             originalOffsetY = offsetY;
             container.style.cursor = 'grabbing';
         }
+
+        // 开始调整画布边界
+        function startResizeEdge(e) {
+            e.stopPropagation();
+            isResizingCanvasEdge = true;
+            resizeEdge = e.target.dataset.edge;
+            resizeStartX = e.clientX;
+            resizeStartY = e.clientY;
+            originalCanvasWidth = canvasWidth;
+            originalCanvasHeight = canvasHeight;
+        }
+
+        // 开始调整画布角
+        function startResizeCorner(e) {
+            e.stopPropagation();
+            isResizingCanvasCorner = true;
+            resizeCorner = e.target.dataset.corner;
+            resizeStartX = e.clientX;
+            resizeStartY = e.clientY;
+            originalCanvasWidth = canvasWidth;
+            originalCanvasHeight = canvasHeight;
+        }
+
         // 处理拖拽
         function handleDrag(e) {
+            if (isResizingCanvasEdge) {
+                const deltaX = e.clientX - resizeStartX;
+                const deltaY = e.clientY - resizeStartY;
+                
+                switch(resizeEdge) {
+                    case 'top':
+                        canvasHeight = Math.max(300, originalCanvasHeight - deltaY);
+                        break;
+                    case 'right':
+                        canvasWidth = Math.max(400, originalCanvasWidth + deltaX);
+                        break;
+                    case 'bottom':
+                        canvasHeight = Math.max(300, originalCanvasHeight + deltaY);
+                        break;
+                    case 'left':
+                        canvasWidth = Math.max(400, originalCanvasWidth - deltaX);
+                        break;
+                }
+                
+                updateCanvasSize();
+                return;
+            }
+            
+            if (isResizingCanvasCorner) {
+                const deltaX = e.clientX - resizeStartX;
+                const deltaY = e.clientY - resizeStartY;
+                
+                switch(resizeCorner) {
+                    case 'tl': // 左上角
+                        canvasWidth = Math.max(400, originalCanvasWidth - deltaX);
+                        canvasHeight = Math.max(300, originalCanvasHeight - deltaY);
+                        break;
+                    case 'tr': // 右上角
+                        canvasWidth = Math.max(400, originalCanvasWidth + deltaX);
+                        canvasHeight = Math.max(300, originalCanvasHeight - deltaY);
+                        break;
+                    case 'bl': // 左下角
+                        canvasWidth = Math.max(400, originalCanvasWidth - deltaX);
+                        canvasHeight = Math.max(300, originalCanvasHeight + deltaY);
+                        break;
+                    case 'br': // 右下角
+                        canvasWidth = Math.max(400, originalCanvasWidth + deltaX);
+                        canvasHeight = Math.max(300, originalCanvasHeight + deltaY);
+                        break;
+                }
+                
+                updateCanvasSize();
+                return;
+            }
+            
             if (isDraggingCanvas) {
                 offsetX = originalOffsetX + (e.clientX - dragStartX);
                 offsetY = originalOffsetY + (e.clientY - dragStartY);
                 applyTransform();
                 return;
             }
-            if (isResizingCanvas) {
-                const deltaX = e.clientX - resizingStartX;
-                const deltaY = e.clientY - resizingStartY;
-                canvasWidth = Math.max(400, originalCanvasWidth + deltaX);
-                canvasHeight = Math.max(300, originalCanvasHeight + deltaY);
-                canvas.width = canvasWidth;
-                canvas.height = canvasHeight;
-                updateCanvasSizeDisplay();
-                draw();
-                return;
-            }
+            
             const rect = canvas.getBoundingClientRect();
             const x = (e.clientX - rect.left - offsetX) / currentScale;
             const y = (e.clientY - rect.top - offsetY) / currentScale;
+            
             images.forEach((img, index) => {
                 if (img.isDragging) {
                     img.x = x - img.width / 2;
@@ -511,43 +716,62 @@
                 }
             });
         }
+
+        // 更新画布尺寸
+        function updateCanvasSize() {
+            canvas.width = canvasWidth;
+            canvas.height = canvasHeight;
+            updateCanvasSizeDisplay();
+            updateCanvasSizeInputs();
+            draw();
+        }
+
         // 停止拖拽
         function stopDrag() {
             isDraggingCanvas = false;
-            isResizingCanvas = false;
+            isResizingCanvasEdge = false;
+            isResizingCanvasCorner = false;
             container.style.cursor = 'grab';
+            
             images.forEach(img => {
                 img.isDragging = false;
                 img.isResizing = false;
                 img.isRotating = false;
             });
         }
+
         // 鼠标滚轮事件
         function handleWheel(e) {
             e.preventDefault();
             const rect = canvas.getBoundingClientRect();
             const mouseX = e.clientX - rect.left;
             const mouseY = e.clientY - rect.top;
+            
             const zoomIntensity = 0.1;
             const delta = e.deltaY > 0 ? -zoomIntensity : zoomIntensity;
             const newScale = Math.max(0.1, Math.min(5, currentScale + delta));
+            
             // 基于鼠标位置缩放
             offsetX -= (mouseX - offsetX) * (newScale / currentScale - 1);
             offsetY -= (mouseY - offsetY) * (newScale / currentScale - 1);
+            
             currentScale = newScale;
             scaleDisplay.textContent = `${Math.round(currentScale * 100)}%`;
             applyTransform();
         }
+
         // 调整画布缩放
         function adjustCanvasScale(delta) {
             currentScale = Math.max(0.1, Math.min(5, currentScale + delta));
             scaleDisplay.textContent = `${Math.round(currentScale * 100)}%`;
             applyTransform();
         }
+
         // 应用变换
         function applyTransform() {
             canvas.style.transform = `translate(${offsetX}px, ${offsetY}px) scale(${currentScale})`;
         }
+
         // 重置视图
         function resetView() {
             currentScale = 1.0;
@@ -556,6 +780,7 @@
             scaleDisplay.textContent = '100%';
             applyTransform();
         }
+
         // 重置画布
         function resetCanvas() {
             if (confirm('确定要重置画布吗？这将清除所有图片。')) {
@@ -564,25 +789,26 @@
                 imageCountDisplay.textContent = '0';
                 canvasWidth = 1200;
                 canvasHeight = 800;
-                canvas.width = canvasWidth;
-                canvas.height = canvasHeight;
-                updateCanvasSizeDisplay();
+                updateCanvasSize();
                 resetView();
-                draw();
             }
         }
+
         // 保存画布
         function saveCanvas() {
             const link = document.createElement('a');
             link.download = `图片拼接_${new Date().getTime()}.png`;
+            
             // 创建临时画布用于导出
             const tempCanvas = document.createElement('canvas');
             tempCanvas.width = canvasWidth;
             tempCanvas.height = canvasHeight;
             const tempCtx = tempCanvas.getContext('2d');
+            
             // 绘制白色背景
             tempCtx.fillStyle = 'white';
             tempCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+            
             // 绘制所有图片
             images.forEach(imgObj => {
                 tempCtx.save();
@@ -597,14 +823,31 @@
                 );
                 tempCtx.restore();
             });
+            
             link.href = tempCanvas.toDataURL('image/png');
             link.click();
         }
+
+        // 从输入框应用画布尺寸
+        function applyCanvasSizeFromInput() {
+            const width = parseInt(canvasWidthInput.value);
+            const height = parseInt(canvasHeightInput.value);
+            
+            if (width >= 100 && width <= 5000 && height >= 100 && height <= 5000) {
+                canvasWidth = width;
+                canvasHeight = height;
+                updateCanvasSize();
+            } else {
+                alert('请输入有效的尺寸（100-5000之间）');
+            }
+        }
+
         // 处理右键点击
         function handleRightClick(e) {
             const rect = canvas.getBoundingClientRect();
             const x = (e.clientX - rect.left - offsetX) / currentScale;
             const y = (e.clientY - rect.top - offsetY) / currentScale;
+            
             for (let i = images.length - 1; i >= 0; i--) {
                 if (isPointInImage(x, y, images[i])) {
                     e.preventDefault();
@@ -618,12 +861,14 @@
                 }
             }
         }
+
         // 辅助函数：判断点是否在图片内
         function isPointInImage(x, y, img) {
             // 考虑旋转的检测比较复杂，这里简化处理
             return x >= img.x && x <= img.x + img.width && 
                    y >= img.y && y <= img.y + img.height;
         }
+
         // 将图片置于顶层
         function bringImageToFront(index) {
             if (index >= 0 && index < images.length) {
@@ -632,24 +877,18 @@
                 activeImageIndex = images.length - 1;
             }
         }
-        // 创建调整画布大小的句柄
-        function createResizeHandle() {
-            // 通过绘制实现
-        }
-        // 绘制调整画布大小的句柄
-        function drawResizeHandle() {
-            ctx.fillStyle = '#3498db';
-            ctx.beginPath();
-            ctx.arc(canvas.width, canvas.height, 10, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.strokeStyle = '#ffffff';
-            ctx.lineWidth = 2;
-            ctx.stroke();
-        }
+
         // 更新画布尺寸显示
         function updateCanvasSizeDisplay() {
             canvasSizeDisplay.textContent = `${canvasWidth} × ${canvasHeight}`;
         }
+
+        // 更新画布尺寸输入框
+        function updateCanvasSizeInputs() {
+            canvasWidthInput.value = canvasWidth;
+            canvasHeightInput.value = canvasHeight;
+        }
+
         // 初始化应用
         window.addEventListener('DOMContentLoaded', init);
     </script>
