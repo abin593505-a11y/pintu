@@ -3,1371 +3,698 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>智能图片拼图工具 - 专业版</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <title>自适应图片拼图</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root {
-            --primary-color: #4361ee;
-            --secondary-color: #3a0ca3;
-            --success-color: #4cc9f0;
-            --danger-color: #f72585;
-            --light-color: #f8f9fa;
-            --dark-color: #212529;
-            --border-color: #dee2e6;
-            --shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-            --radius: 12px;
-            --transition: all 0.3s ease;
-        }
-        
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, sans-serif;
         }
         
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft YaHei', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            color: #333;
             min-height: 100vh;
-            color: var(--dark-color);
             padding: 20px;
         }
         
         .container {
-            max-width: 1600px;
+            max-width: 1200px;
             margin: 0 auto;
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            overflow: hidden;
         }
         
-        /* 顶部区域 */
-        .app-header {
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-            color: white;
-            padding: 25px 40px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .header-content {
-            flex: 1;
-        }
-        
-        .app-header h1 {
-            font-size: 2.4rem;
-            margin-bottom: 8px;
-            font-weight: 700;
-        }
-        
-        .app-header .subtitle {
-            font-size: 1.1rem;
-            opacity: 0.9;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .stats-bar {
-            display: flex;
-            gap: 30px;
-            background: rgba(255, 255, 255, 0.1);
-            padding: 15px 25px;
-            border-radius: 50px;
-            backdrop-filter: blur(10px);
-        }
-        
-        .stat-item {
+        header {
             text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
         }
         
-        .stat-value {
-            font-size: 1.4rem;
-            font-weight: 700;
-            display: block;
-            color: var(--success-color);
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 2.5rem;
         }
         
-        .stat-label {
-            font-size: 0.9rem;
-            opacity: 0.8;
+        .subtitle {
+            color: #7f8c8d;
+            font-size: 1.1rem;
+            max-width: 800px;
+            margin: 0 auto;
+            line-height: 1.6;
         }
         
-        /* 主要内容区域 */
         .main-content {
-            display: grid;
-            grid-template-columns: 280px 1fr;
-            min-height: 800px;
-        }
-        
-        /* 侧边栏 */
-        .sidebar {
-            background: var(--light-color);
-            border-right: 1px solid var(--border-color);
-            padding: 25px;
-            overflow-y: auto;
-        }
-        
-        .sidebar-section {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
             margin-bottom: 30px;
         }
         
-        .sidebar-section h3 {
-            font-size: 1.2rem;
-            margin-bottom: 15px;
-            color: var(--primary-color);
-            padding-bottom: 10px;
-            border-bottom: 2px solid var(--primary-color);
-            display: flex;
-            align-items: center;
-            gap: 10px;
+        .controls {
+            flex: 1;
+            min-width: 300px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
         }
         
-        /* 上传区域 */
-        .upload-area {
-            border: 3px dashed var(--border-color);
-            border-radius: var(--radius);
-            padding: 40px 20px;
-            text-align: center;
-            cursor: pointer;
-            transition: var(--transition);
-            background: white;
-            margin-bottom: 20px;
-        }
-        
-        .upload-area:hover {
-            border-color: var(--primary-color);
-            background: rgba(67, 97, 238, 0.05);
-        }
-        
-        .upload-icon {
-            font-size: 3rem;
-            color: var(--primary-color);
-            margin-bottom: 15px;
-        }
-        
-        .upload-text {
-            font-size: 1.1rem;
-            margin-bottom: 10px;
-            color: var(--dark-color);
-        }
-        
-        .upload-subtext {
-            font-size: 0.9rem;
-            color: #6c757d;
-        }
-        
-        /* 按钮样式 */
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            padding: 12px 20px;
-            border: none;
-            border-radius: 8px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: var(--transition);
-            width: 100%;
-            margin-bottom: 10px;
-        }
-        
-        .btn-primary {
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-            color: white;
-        }
-        
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(67, 97, 238, 0.3);
-        }
-        
-        .btn-secondary {
-            background: var(--light-color);
-            color: var(--dark-color);
-            border: 2px solid var(--border-color);
-        }
-        
-        .btn-secondary:hover {
-            background: #e9ecef;
-        }
-        
-        .btn-danger {
-            background: linear-gradient(135deg, var(--danger-color), #b5179e);
-            color: white;
-        }
-        
-        /* 布局选择器 */
-        .layout-selector {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
-        }
-        
-        .layout-option {
-            background: white;
-            border: 2px solid var(--border-color);
-            border-radius: 10px;
-            padding: 15px 10px;
-            text-align: center;
-            cursor: pointer;
-            transition: var(--transition);
-        }
-        
-        .layout-option:hover {
-            border-color: var(--primary-color);
-            transform: translateY(-2px);
-        }
-        
-        .layout-option.active {
-            border-color: var(--primary-color);
-            background: rgba(67, 97, 238, 0.1);
-            box-shadow: 0 4px 12px rgba(67, 97, 238, 0.15);
-        }
-        
-        .layout-icon {
-            font-size: 1.8rem;
-            margin-bottom: 8px;
-        }
-        
-        /* 控制滑块 */
-        .control-group {
-            margin-bottom: 20px;
-        }
-        
-        .control-label {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 8px;
-            font-weight: 500;
-        }
-        
-        .control-value {
-            color: var(--primary-color);
-            font-weight: 600;
-        }
-        
-        .slider {
-            width: 100%;
-            height: 6px;
-            border-radius: 3px;
-            background: var(--border-color);
-            outline: none;
-            -webkit-appearance: none;
-        }
-        
-        .slider::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            background: var(--primary-color);
-            cursor: pointer;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-        }
-        
-        /* 图片预览 */
-        .image-preview {
-            max-height: 200px;
-            overflow-y: auto;
-            padding: 10px;
-            background: white;
-            border-radius: var(--radius);
-            border: 1px solid var(--border-color);
-        }
-        
-        .preview-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-        }
-        
-        .preview-item {
-            position: relative;
-            border-radius: 8px;
-            overflow: hidden;
-            cursor: pointer;
-        }
-        
-        .preview-item img {
-            width: 100%;
-            height: 80px;
-            object-fit: cover;
-            transition: var(--transition);
-        }
-        
-        .preview-item:hover img {
-            transform: scale(1.05);
-        }
-        
-        .preview-item.active::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            border: 3px solid var(--primary-color);
-            border-radius: 8px;
-        }
-        
-        .preview-remove {
-            position: absolute;
-            top: 5px;
-            right: 5px;
-            background: var(--danger-color);
-            color: white;
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 12px;
-            opacity: 0;
-            transition: var(--transition);
-            cursor: pointer;
-        }
-        
-        .preview-item:hover .preview-remove {
-            opacity: 1;
-        }
-        
-        /* 画布区域 */
-        .canvas-area {
-            padding: 30px;
-            background: #f8f9fa;
+        .gallery-container {
+            flex: 2;
+            min-width: 300px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
             display: flex;
             flex-direction: column;
         }
         
-        .canvas-container {
-            flex: 1;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background: linear-gradient(45deg, #f5f7fa 25%, transparent 25%),
-                        linear-gradient(-45deg, #f5f7fa 25%, transparent 25%),
-                        linear-gradient(45deg, transparent 75%, #f5f7fa 75%),
-                        linear-gradient(-45deg, transparent 75%, #f5f7fa 75%);
-            background-size: 20px 20px;
-            background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
-            border-radius: var(--radius);
-            overflow: auto;
-            padding: 20px;
+        .section-title {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #ecf0f1;
+            font-size: 1.5rem;
         }
         
-        #main-canvas {
+        .control-group {
+            margin-bottom: 25px;
+        }
+        
+        .control-group label {
             display: block;
-            background: white;
-            box-shadow: var(--shadow);
-            border-radius: var(--radius);
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #34495e;
         }
         
-        .canvas-controls {
+        .slider-container {
             display: flex;
+            align-items: center;
             gap: 15px;
-            margin-top: 20px;
-            padding: 20px;
-            background: white;
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
         }
         
-        .canvas-info {
-            display: flex;
-            gap: 30px;
-            align-items: center;
+        .slider-container input[type="range"] {
+            flex: 1;
+            height: 8px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: #dfe6e9;
+            border-radius: 4px;
+            outline: none;
         }
         
-        .info-item {
+        .slider-container input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: #3498db;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+        
+        .slider-value {
+            background: #ecf0f1;
+            padding: 5px 12px;
+            border-radius: 20px;
+            min-width: 60px;
             text-align: center;
+            font-weight: 600;
+            color: #2c3e50;
         }
         
-        .info-value {
-            font-size: 1.3rem;
-            font-weight: 700;
-            color: var(--primary-color);
-            display: block;
-        }
-        
-        .info-label {
-            font-size: 0.9rem;
-            color: #6c757d;
-        }
-        
-        /* 快速布局按钮 */
-        .quick-layouts {
+        .button-group {
             display: flex;
+            flex-wrap: wrap;
             gap: 10px;
-            overflow-x: auto;
-            padding: 10px 0;
             margin-top: 10px;
         }
         
-        .quick-layout {
+        button {
+            padding: 12px 18px;
+            border: none;
+            border-radius: 8px;
+            background: #3498db;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            flex: 1;
+            min-width: 140px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        button:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        #addImagesBtn {
+            background: #2ecc71;
+        }
+        
+        #addImagesBtn:hover {
+            background: #27ae60;
+        }
+        
+        #clearBtn {
+            background: #e74c3c;
+        }
+        
+        #clearBtn:hover {
+            background: #c0392b;
+        }
+        
+        #randomBtn {
+            background: #9b59b6;
+        }
+        
+        #randomBtn:hover {
+            background: #8e44ad;
+        }
+        
+        .gallery {
+            flex: 1;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            grid-auto-rows: 180px;
+            gap: 10px;
+            overflow-y: auto;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            min-height: 400px;
+            transition: gap 0.3s ease;
+        }
+        
+        .gallery-item {
+            position: relative;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .gallery-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .gallery-item.selected {
+            outline: 4px solid #3498db;
+            transform: scale(1.02);
+        }
+        
+        .gallery-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            transition: transform 0.3s ease;
+        }
+        
+        .gallery-item:hover img {
+            transform: scale(1.05);
+        }
+        
+        .gallery-item .remove-btn {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: rgba(231, 76, 60, 0.9);
+            color: white;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .gallery-item:hover .remove-btn {
+            opacity: 1;
+        }
+        
+        .gallery-item .remove-btn:hover {
+            background: #c0392b;
+        }
+        
+        .empty-state {
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 10px 15px;
-            background: white;
-            border: 2px solid var(--border-color);
-            border-radius: 8px;
-            cursor: pointer;
-            transition: var(--transition);
-            min-width: 80px;
+            justify-content: center;
+            height: 100%;
+            color: #7f8c8d;
+            text-align: center;
+            padding: 40px 20px;
         }
         
-        .quick-layout:hover {
-            border-color: var(--primary-color);
-            transform: translateY(-2px);
+        .empty-state i {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            color: #bdc3c7;
         }
         
-        .quick-layout i {
-            font-size: 1.5rem;
-            margin-bottom: 5px;
-            color: var(--primary-color);
+        .empty-state p {
+            font-size: 1.2rem;
+            max-width: 400px;
+            line-height: 1.6;
         }
         
-        /* 响应式设计 */
-        @media (max-width: 1200px) {
-            .main-content {
-                grid-template-columns: 1fr;
-            }
-            
-            .sidebar {
-                border-right: none;
-                border-bottom: 1px solid var(--border-color);
-            }
+        .instructions {
+            margin-top: 20px;
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 4px solid #3498db;
+        }
+        
+        .instructions h3 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        
+        .instructions ul {
+            padding-left: 20px;
+            color: #555;
+            line-height: 1.5;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: #7f8c8d;
+            font-size: 0.9rem;
+            margin-top: 20px;
         }
         
         @media (max-width: 768px) {
-            .app-header {
-                flex-direction: column;
-                text-align: center;
-                gap: 20px;
-            }
-            
-            .stats-bar {
-                width: 100%;
-                justify-content: center;
-            }
-            
-            .canvas-controls {
+            .main-content {
                 flex-direction: column;
             }
             
-            .layout-selector {
-                grid-template-columns: 1fr;
+            .gallery {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+                grid-auto-rows: 150px;
+            }
+            
+            h1 {
+                font-size: 2rem;
             }
         }
         
-        /* 自定义滚动条 */
-        ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-        }
-        
-        ::-webkit-scrollbar-track {
-            background: #f1f1f1;
-            border-radius: 4px;
-        }
-        
-        ::-webkit-scrollbar-thumb {
-            background: var(--primary-color);
-            border-radius: 4px;
-        }
-        
-        ::-webkit-scrollbar-thumb:hover {
-            background: var(--secondary-color);
+        @media (max-width: 480px) {
+            .gallery {
+                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+                grid-auto-rows: 120px;
+            }
+            
+            button {
+                min-width: 100%;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- 顶部区域 -->
-        <header class="app-header">
-            <div class="header-content">
-                <h1><i class="fas fa-puzzle-piece"></i> 智能图片拼图工具</h1>
-                <div class="subtitle">
-                    <span>专业级图片拼接 | 智能自适应画布 | 多种布局模式</span>
-                    <span class="stat-label">在线版 v2.0</span>
-                </div>
-            </div>
-            <div class="stats-bar">
-                <div class="stat-item">
-                    <span class="stat-value" id="total-images">0</span>
-                    <span class="stat-label">图片数量</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-value" id="canvas-size">自适应</span>
-                    <span class="stat-label">画布尺寸</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-value" id="current-layout">网格</span>
-                    <span class="stat-label">当前布局</span>
-                </div>
-            </div>
+        <header>
+            <h1><i class="fas fa-images"></i> 自适应图片拼图</h1>
+            <p class="subtitle">上传多种尺寸的图片，智能调整布局，创建完美拼图。使用间距控制调整图片间隔，支持拖拽排序和自定义选择。</p>
         </header>
         
-        <!-- 主要内容区域 -->
         <div class="main-content">
-            <!-- 侧边栏 -->
-            <aside class="sidebar">
-                <!-- 上传区域 -->
-                <div class="sidebar-section">
-                    <h3><i class="fas fa-cloud-upload-alt"></i> 上传图片</h3>
-                    <div class="upload-area" id="upload-area">
-                        <div class="upload-icon">
-                            <i class="fas fa-images"></i>
-                        </div>
-                        <div class="upload-text">点击或拖拽图片到此区域</div>
-                        <div class="upload-subtext">支持 JPG, PNG, GIF 格式</div>
-                        <input type="file" id="file-input" multiple accept="image/*" style="display: none;">
-                    </div>
-                    <button class="btn btn-primary" id="btn-select">
-                        <i class="fas fa-folder-open"></i> 选择图片
-                    </button>
-                </div>
+            <div class="controls">
+                <h2 class="section-title"><i class="fas fa-sliders-h"></i> 拼图控制</h2>
                 
-                <!-- 布局设置 -->
-                <div class="sidebar-section">
-                    <h3><i class="fas fa-th-large"></i> 布局模式</h3>
-                    <div class="layout-selector">
-                        <div class="layout-option active" data-layout="grid">
-                            <div class="layout-icon">◼◼◼</div>
-                            <div>网格布局</div>
-                        </div>
-                        <div class="layout-option" data-layout="masonry">
-                            <div class="layout-icon">▦</div>
-                            <div>瀑布流</div>
-                        </div>
-                        <div class="layout-option" data-layout="collage">
-                            <div class="layout-icon">✂</div>
-                            <div>拼贴画</div>
-                        </div>
-                        <div class="layout-option" data-layout="freeform">
-                            <div class="layout-icon">✋</div>
-                            <div>自由排列</div>
-                        </div>
-                    </div>
-                    
-                    <!-- 快速布局 -->
-                    <div class="quick-layouts">
-                        <div class="quick-layout" data-quick="1x1">
-                            <i class="fas fa-square"></i>
-                            <span>1×1</span>
-                        </div>
-                        <div class="quick-layout" data-quick="2x2">
-                            <i class="fas fa-th"></i>
-                            <span>2×2</span>
-                        </div>
-                        <div class="quick-layout" data-quick="3x3">
-                            <i class="fas fa-border-all"></i>
-                            <span>3×3</span>
-                        </div>
-                        <div class="quick-layout" data-quick="4x4">
-                            <i class="fas fa-grip"></i>
-                            <span>4×4</span>
-                        </div>
-                        <div class="quick-layout" data-quick="instagram">
-                            <i class="fab fa-instagram"></i>
-                            <span>Instagram</span>
-                        </div>
-                        <div class="quick-layout" data-quick="story">
-                            <i class="fas fa-scroll"></i>
-                            <span>故事板</span>
-                        </div>
+                <div class="control-group">
+                    <label for="spacingSlider"><i class="fas fa-arrows-alt-h"></i> 图片间距: <span id="spacingValue">10</span>px</label>
+                    <div class="slider-container">
+                        <input type="range" id="spacingSlider" min="0" max="30" value="10" step="1">
+                        <div class="slider-value" id="spacingDisplay">10px</div>
                     </div>
                 </div>
                 
-                <!-- 样式设置 -->
-                <div class="sidebar-section">
-                    <h3><i class="fas fa-palette"></i> 样式设置</h3>
-                    <div class="control-group">
-                        <div class="control-label">
-                            <span>间距</span>
-                            <span class="control-value" id="spacing-value">20px</span>
-                        </div>
-                        <input type="range" class="slider" id="spacing-slider" min="0" max="100" value="20">
-                    </div>
-                    
-                    <div class="control-group">
-                        <div class="control-label">
-                            <span>圆角</span>
-                            <span class="control-value" id="radius-value">10px</span>
-                        </div>
-                        <input type="range" class="slider" id="radius-slider" min="0" max="50" value="10">
-                    </div>
-                    
-                    <div class="control-group">
-                        <div class="control-label">
-                            <span>边框</span>
-                            <span class="control-value" id="border-value">2px</span>
-                        </div>
-                        <input type="range" class="slider" id="border-slider" min="0" max="20" value="2">
-                    </div>
-                    
-                    <div class="control-group">
-                        <div class="control-label">
-                            <span>背景色</span>
-                            <input type="color" id="bg-color" value="#ffffff">
-                        </div>
+                <div class="control-group">
+                    <label for="columnsSlider"><i class="fas fa-columns"></i> 网格列数: <span id="columnsValue">4</span></label>
+                    <div class="slider-container">
+                        <input type="range" id="columnsSlider" min="2" max="8" value="4" step="1">
+                        <div class="slider-value" id="columnsDisplay">4</div>
                     </div>
                 </div>
                 
-                <!-- 图片预览 -->
-                <div class="sidebar-section">
-                    <h3><i class="fas fa-images"></i> 图片预览</h3>
-                    <div class="image-preview" id="image-preview">
-                        <div class="preview-grid" id="preview-grid">
-                            <!-- 图片预览会动态添加到这里 -->
-                        </div>
+                <div class="control-group">
+                    <label for="rowHeightSlider"><i class="fas fa-arrows-alt-v"></i> 行高: <span id="rowHeightValue">180</span>px</label>
+                    <div class="slider-container">
+                        <input type="range" id="rowHeightSlider" min="100" max="300" value="180" step="10">
+                        <div class="slider-value" id="rowHeightDisplay">180px</div>
                     </div>
                 </div>
                 
-                <!-- 操作按钮 -->
-                <div class="sidebar-section">
-                    <button class="btn btn-primary" id="btn-apply">
-                        <i class="fas fa-magic"></i> 智能排列
+                <div class="button-group">
+                    <button id="addImagesBtn">
+                        <i class="fas fa-plus-circle"></i> 添加图片
                     </button>
-                    <button class="btn btn-secondary" id="btn-reset">
-                        <i class="fas fa-redo"></i> 重置布局
+                    <button id="randomBtn">
+                        <i class="fas fa-random"></i> 随机排列
                     </button>
-                    <button class="btn btn-danger" id="btn-clear">
-                        <i class="fas fa-trash"></i> 清空所有
+                    <button id="clearBtn">
+                        <i class="fas fa-trash-alt"></i> 清空拼图
                     </button>
                 </div>
-            </aside>
+                
+                <div class="instructions">
+                    <h3><i class="fas fa-info-circle"></i> 使用说明</h3>
+                    <ul>
+                        <li>点击"添加图片"上传本地图片</li>
+                        <li>使用间距滑块调整图片之间的间隔</li>
+                        <li>拖拽图片可以重新排列顺序</li>
+                        <li>点击图片可以选中/取消选中</li>
+                        <li>鼠标悬停在图片上可显示删除按钮</li>
+                    </ul>
+                </div>
+            </div>
             
-            <!-- 画布区域 -->
-            <main class="canvas-area">
-                <div class="canvas-container">
-                    <canvas id="main-canvas"></canvas>
-                </div>
-                
-                <div class="canvas-controls">
-                    <div class="canvas-info">
-                        <div class="info-item">
-                            <span class="info-value" id="canvas-width">800</span>
-                            <span class="info-label">宽度 (px)</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-value" id="canvas-height">600</span>
-                            <span class="info-label">高度 (px)</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-value" id="image-count">0</span>
-                            <span class="info-label">图片数量</span>
-                        </div>
+            <div class="gallery-container">
+                <h2 class="section-title"><i class="fas fa-th"></i> 拼图预览</h2>
+                <div class="gallery" id="gallery">
+                    <div class="empty-state" id="emptyState">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <p>还没有图片，点击"添加图片"按钮上传图片开始创建拼图</p>
                     </div>
-                    
-                    <div style="flex: 1;"></div>
-                    
-                    <button class="btn btn-primary" id="btn-export" style="width: auto;">
-                        <i class="fas fa-download"></i> 导出图片
-                    </button>
-                    <button class="btn btn-secondary" id="btn-copy" style="width: auto;">
-                        <i class="fas fa-copy"></i> 复制到剪贴板
-                    </button>
                 </div>
-                
-                <!-- 使用说明 -->
-                <div style="margin-top: 20px; padding: 15px; background: white; border-radius: var(--radius);">
-                    <h4><i class="fas fa-info-circle"></i> 使用提示</h4>
-                    <p style="color: #6c757d; font-size: 0.9rem; margin-top: 8px;">
-                        1. 上传图片后会自动智能排列<br>
-                        2. 拖动图片可调整位置，滚轮可缩放<br>
-                        3. 点击布局模式可快速切换排列方式<br>
-                        4. 画布会根据图片内容自动调整大小
-                    </p>
-                </div>
-            </main>
+            </div>
         </div>
+        
+        <footer>
+            <p>自适应图片拼图 &copy; 2023 | 支持多种图片尺寸 | 拖拽排序 | 可调节间距</p>
+        </footer>
     </div>
-
+    
     <script>
-        // 核心变量
-        const canvas = document.getElementById('main-canvas');
-        const ctx = canvas.getContext('2d');
-        const fileInput = document.getElementById('file-input');
-        const uploadArea = document.getElementById('upload-area');
+        // 获取DOM元素
+        const gallery = document.getElementById('gallery');
+        const emptyState = document.getElementById('emptyState');
+        const spacingSlider = document.getElementById('spacingSlider');
+        const spacingDisplay = document.getElementById('spacingDisplay');
+        const spacingValue = document.getElementById('spacingValue');
+        const columnsSlider = document.getElementById('columnsSlider');
+        const columnsDisplay = document.getElementById('columnsDisplay');
+        const columnsValue = document.getElementById('columnsValue');
+        const rowHeightSlider = document.getElementById('rowHeightSlider');
+        const rowHeightDisplay = document.getElementById('rowHeightDisplay');
+        const rowHeightValue = document.getElementById('rowHeightValue');
+        const addImagesBtn = document.getElementById('addImagesBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        const randomBtn = document.getElementById('randomBtn');
         
-        // 状态管理
+        // 图片数组
         let images = [];
-        let selectedImageIndex = -1;
-        let currentLayout = 'grid';
-        let settings = {
-            spacing: 20,
-            borderRadius: 10,
-            borderWidth: 2,
-            backgroundColor: '#ffffff',
-            canvasPadding: 40
-        };
+        let selectedImages = new Set();
         
-        // 初始化画布
-        function initCanvas() {
-            canvas.width = 800;
-            canvas.height = 600;
-            draw();
+        // 初始化示例图片
+        const sampleImages = [
+            'https://images.unsplash.com/photo-1501854140801-50d01698950b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80',
+            'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80',
+            'https://images.unsplash.com/photo-1469474968028-56623f02e42e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80',
+            'https://images.unsplash.com/photo-1505142468610-359e7d316be0?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80',
+            'https://images.unsplash.com/photo-1518837695005-2083093ee35b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80',
+            'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80',
+            'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80',
+            'https://images.unsplash.com/photo-1475924156734-496f6cac6ec1?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80'
+        ];
+        
+        // 初始化加载示例图片
+        function initSampleImages() {
+            images = sampleImages.map((url, index) => ({
+                id: `sample-${index}`,
+                url: url,
+                name: `示例图片 ${index + 1}`
+            }));
+            
+            renderGallery();
         }
         
-        // 初始化事件监听
-        function initEvents() {
-            // 上传相关事件
-            uploadArea.addEventListener('click', () => fileInput.click());
-            uploadArea.addEventListener('dragover', (e) => {
-                e.preventDefault();
-                uploadArea.style.borderColor = '#4361ee';
-                uploadArea.style.background = 'rgba(67, 97, 238, 0.05)';
-            });
+        // 渲染拼图
+        function renderGallery() {
+            gallery.innerHTML = '';
             
-            uploadArea.addEventListener('dragleave', () => {
-                uploadArea.style.borderColor = '#dee2e6';
-                uploadArea.style.background = 'white';
-            });
-            
-            uploadArea.addEventListener('drop', (e) => {
-                e.preventDefault();
-                uploadArea.style.borderColor = '#dee2e6';
-                uploadArea.style.background = 'white';
-                
-                const files = e.dataTransfer.files;
-                handleFiles(files);
-            });
-            
-            fileInput.addEventListener('change', (e) => {
-                handleFiles(e.target.files);
-            });
-            
-            // 按钮事件
-            document.getElementById('btn-select').addEventListener('click', () => fileInput.click());
-            document.getElementById('btn-apply').addEventListener('click', applyLayout);
-            document.getElementById('btn-reset').addEventListener('click', resetLayout);
-            document.getElementById('btn-clear').addEventListener('click', clearAll);
-            document.getElementById('btn-export').addEventListener('click', exportImage);
-            document.getElementById('btn-copy').addEventListener('click', copyToClipboard);
-            
-            // 布局选择
-            document.querySelectorAll('.layout-option').forEach(option => {
-                option.addEventListener('click', function() {
-                    document.querySelectorAll('.layout-option').forEach(o => o.classList.remove('active'));
-                    this.classList.add('active');
-                    currentLayout = this.dataset.layout;
-                    updateCurrentLayout();
-                    applyLayout();
-                });
-            });
-            
-            // 快速布局
-            document.querySelectorAll('.quick-layout').forEach(layout => {
-                layout.addEventListener('click', function() {
-                    const layoutType = this.dataset.quick;
-                    applyQuickLayout(layoutType);
-                });
-            });
-            
-            // 滑块控制
-            document.getElementById('spacing-slider').addEventListener('input', function() {
-                settings.spacing = parseInt(this.value);
-                document.getElementById('spacing-value').textContent = this.value + 'px';
-                applyLayout();
-            });
-            
-            document.getElementById('radius-slider').addEventListener('input', function() {
-                settings.borderRadius = parseInt(this.value);
-                document.getElementById('radius-value').textContent = this.value + 'px';
-                draw();
-            });
-            
-            document.getElementById('border-slider').addEventListener('input', function() {
-                settings.borderWidth = parseInt(this.value);
-                document.getElementById('border-value').textContent = this.value + 'px';
-                draw();
-            });
-            
-            document.getElementById('bg-color').addEventListener('input', function() {
-                settings.backgroundColor = this.value;
-                draw();
-            });
-            
-            // 画布交互
-            canvas.addEventListener('mousedown', startDrag);
-            canvas.addEventListener('mousemove', handleDrag);
-            canvas.addEventListener('mouseup', stopDrag);
-            canvas.addEventListener('wheel', handleWheel);
-            canvas.addEventListener('dblclick', handleDoubleClick);
-        }
-        
-        // 处理上传的文件
-        async function handleFiles(files) {
-            const fileArray = Array.from(files);
-            
-            for (const file of fileArray) {
-                if (!file.type.startsWith('image/')) continue;
-                
-                const img = await loadImage(file);
-                images.push({
-                    element: img,
-                    width: img.width,
-                    height: img.height,
-                    x: 0,
-                    y: 0,
-                    scale: 1,
-                    rotation: 0,
-                    isDragging: false,
-                    fileName: file.name
-                });
+            if (images.length === 0) {
+                emptyState.style.display = 'flex';
+                gallery.appendChild(emptyState);
+                return;
             }
             
-            updateImagePreviews();
-            updateImageCount();
-            applyLayout();
-        }
-        
-        // 加载图片
-        function loadImage(file) {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    const img = new Image();
-                    img.onload = () => resolve(img);
-                    img.onerror = reject;
-                    img.src = e.target.result;
-                };
-                reader.readAsDataURL(file);
-            });
-        }
-        
-        // 更新图片预览
-        function updateImagePreviews() {
-            const previewGrid = document.getElementById('preview-grid');
-            previewGrid.innerHTML = '';
+            emptyState.style.display = 'none';
             
-            images.forEach((img, index) => {
-                const previewItem = document.createElement('div');
-                previewItem.className = 'preview-item' + (selectedImageIndex === index ? ' active' : '');
+            // 更新网格间距
+            const spacing = parseInt(spacingSlider.value);
+            gallery.style.gap = `${spacing}px`;
+            
+            // 更新网格列数
+            const columns = parseInt(columnsSlider.value);
+            gallery.style.gridTemplateColumns = `repeat(auto-fill, minmax(calc((100% - ${(columns-1)*spacing}px)/${columns}), 1fr))`;
+            
+            // 更新行高
+            const rowHeight = parseInt(rowHeightSlider.value);
+            gallery.style.gridAutoRows = `${rowHeight}px`;
+            
+            // 创建图片元素
+            images.forEach((image, index) => {
+                const item = document.createElement('div');
+                item.className = 'gallery-item';
+                item.dataset.id = image.id;
                 
-                const imgElement = document.createElement('img');
-                imgElement.src = img.element.src;
-                imgElement.alt = `图片 ${index + 1}`;
+                if (selectedImages.has(image.id)) {
+                    item.classList.add('selected');
+                }
                 
+                // 创建图片
+                const img = document.createElement('img');
+                img.src = image.url;
+                img.alt = image.name;
+                img.loading = 'lazy';
+                
+                // 创建删除按钮
                 const removeBtn = document.createElement('div');
-                removeBtn.className = 'preview-remove';
-                removeBtn.innerHTML = '×';
-                removeBtn.onclick = (e) => {
+                removeBtn.className = 'remove-btn';
+                removeBtn.innerHTML = '<i class="fas fa-times"></i>';
+                removeBtn.addEventListener('click', (e) => {
                     e.stopPropagation();
-                    images.splice(index, 1);
-                    updateImagePreviews();
-                    updateImageCount();
-                    applyLayout();
-                };
-                
-                previewItem.appendChild(imgElement);
-                previewItem.appendChild(removeBtn);
-                previewItem.onclick = () => {
-                    selectedImageIndex = index;
-                    updateImagePreviews();
-                    draw();
-                };
-                
-                previewGrid.appendChild(previewItem);
-            });
-        }
-        
-        // 更新统计数据
-        function updateImageCount() {
-            const count = images.length;
-            document.getElementById('total-images').textContent = count;
-            document.getElementById('image-count').textContent = count;
-        }
-        
-        function updateCurrentLayout() {
-            document.getElementById('current-layout').textContent = 
-                currentLayout === 'grid' ? '网格' :
-                currentLayout === 'masonry' ? '瀑布流' :
-                currentLayout === 'collage' ? '拼贴画' : '自由排列';
-        }
-        
-        // 应用布局
-        function applyLayout() {
-            if (images.length === 0) return;
-            
-            switch(currentLayout) {
-                case 'grid':
-                    applyGridLayout();
-                    break;
-                case 'masonry':
-                    applyMasonryLayout();
-                    break;
-                case 'collage':
-                    applyCollageLayout();
-                    break;
-                case 'freeform':
-                    applyFreeformLayout();
-                    break;
-            }
-            
-            updateCanvasSize();
-            draw();
-        }
-        
-        // 网格布局
-        function applyGridLayout() {
-            const cols = Math.ceil(Math.sqrt(images.length));
-            const rows = Math.ceil(images.length / cols);
-            
-            const containerWidth = cols * 200 + (cols - 1) * settings.spacing;
-            const containerHeight = rows * 200 + (rows - 1) * settings.spacing;
-            
-            images.forEach((img, index) => {
-                const col = index % cols;
-                const row = Math.floor(index / cols);
-                
-                const maxCellWidth = 200;
-                const maxCellHeight = 200;
-                
-                const scale = Math.min(
-                    maxCellWidth / img.width,
-                    maxCellHeight / img.height,
-                    1
-                );
-                
-                img.width = img.element.width * scale;
-                img.height = img.element.height * scale;
-                img.scale = scale;
-                
-                img.x = col * (maxCellWidth + settings.spacing) + (maxCellWidth - img.width) / 2;
-                img.y = row * (maxCellHeight + settings.spacing) + (maxCellHeight - img.height) / 2;
-            });
-        }
-        
-        // 瀑布流布局
-        function applyMasonryLayout() {
-            const containerWidth = 800;
-            const columns = 3;
-            const columnWidth = (containerWidth - (columns - 1) * settings.spacing) / columns;
-            
-            const columnHeights = new Array(columns).fill(0);
-            
-            images.forEach((img, index) => {
-                const col = index % columns;
-                
-                const scale = columnWidth / img.element.width;
-                img.width = columnWidth;
-                img.height = img.element.height * scale;
-                img.scale = scale;
-                
-                img.x = col * (columnWidth + settings.spacing);
-                img.y = columnHeights[col];
-                
-                columnHeights[col] += img.height + settings.spacing;
-            });
-        }
-        
-        // 拼贴画布局
-        function applyCollageLayout() {
-            const centerX = 400;
-            const centerY = 300;
-            const angleStep = (2 * Math.PI) / images.length;
-            const radius = Math.min(300, 200 + images.length * 20);
-            
-            images.forEach((img, index) => {
-                const angle = index * angleStep;
-                const distance = radius * (0.5 + Math.random() * 0.5);
-                
-                const x = centerX + Math.cos(angle) * distance;
-                const y = centerY + Math.sin(angle) * distance;
-                
-                const scale = 0.3 + Math.random() * 0.4;
-                img.width = img.element.width * scale;
-                img.height = img.element.height * scale;
-                img.scale = scale;
-                img.rotation = (Math.random() - 0.5) * 0.5;
-                
-                img.x = x - img.width / 2;
-                img.y = y - img.height / 2;
-            });
-        }
-        
-        // 自由排列布局
-        function applyFreeformLayout() {
-            const centerX = 400;
-            const centerY = 300;
-            
-            images.forEach((img, index) => {
-                const angle = (index * 137.5) * Math.PI / 180; // 黄金角度
-                const distance = 150 * Math.sqrt(index + 1);
-                
-                const x = centerX + Math.cos(angle) * distance;
-                const y = centerY + Math.sin(angle) * distance;
-                
-                const scale = 0.2 + 0.6 / Math.sqrt(index + 1);
-                img.width = img.element.width * scale;
-                img.height = img.element.height * scale;
-                img.scale = scale;
-                img.rotation = (Math.random() - 0.5) * 0.3;
-                
-                img.x = x - img.width / 2;
-                img.y = y - img.height / 2;
-            });
-        }
-        
-        // 快速布局
-        function applyQuickLayout(layoutType) {
-            switch(layoutType) {
-                case '1x1':
-                    currentLayout = 'grid';
-                    images.forEach(img => img.scale = 0.8);
-                    break;
-                case '2x2':
-                    currentLayout = 'grid';
-                    break;
-                case '3x3':
-                    currentLayout = 'grid';
-                    break;
-                case '4x4':
-                    currentLayout = 'grid';
-                    break;
-                case 'instagram':
-                    currentLayout = 'masonry';
-                    break;
-                case 'story':
-                    currentLayout = 'freeform';
-                    break;
-            }
-            
-            updateCurrentLayout();
-            applyLayout();
-        }
-        
-        // 更新画布尺寸
-        function updateCanvasSize() {
-            if (images.length === 0) {
-                canvas.width = 800;
-                canvas.height = 600;
-                updateCanvasInfo();
-                return;
-            }
-            
-            let minX = Infinity, maxX = -Infinity;
-            let minY = Infinity, maxY = -Infinity;
-            
-            images.forEach(img => {
-                minX = Math.min(minX, img.x);
-                maxX = Math.max(maxX, img.x + img.width);
-                minY = Math.min(minY, img.y);
-                maxY = Math.max(maxY, img.y + img.height);
-            });
-            
-            const padding = settings.canvasPadding;
-            const width = Math.max(400, maxX - minX + padding * 2);
-            const height = Math.max(300, maxY - minY + padding * 2);
-            
-            // 调整所有图片位置
-            const offsetX = padding - minX;
-            const offsetY = padding - minY;
-            
-            images.forEach(img => {
-                img.x += offsetX;
-                img.y += offsetY;
-            });
-            
-            canvas.width = width;
-            canvas.height = height;
-            updateCanvasInfo();
-        }
-        
-        function updateCanvasInfo() {
-            document.getElementById('canvas-width').textContent = canvas.width;
-            document.getElementById('canvas-height').textContent = canvas.height;
-            document.getElementById('canvas-size').textContent = `${canvas.width}×${canvas.height}`;
-        }
-        
-        // 绘制函数
-        function draw() {
-            // 清空画布
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
-            // 绘制背景
-            ctx.fillStyle = settings.backgroundColor;
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            
-            // 绘制网格背景
-            drawGrid();
-            
-            // 绘制所有图片
-            images.forEach((img, index) => {
-                drawImage(img, index === selectedImageIndex);
-            });
-        }
-        
-        // 绘制网格背景
-        function drawGrid() {
-            const gridSize = 20;
-            ctx.strokeStyle = 'rgba(0, 0, 0, 0.05)';
-            ctx.lineWidth = 1;
-            
-            // 垂直线
-            for (let x = 0; x <= canvas.width; x += gridSize) {
-                ctx.beginPath();
-                ctx.moveTo(x, 0);
-                ctx.lineTo(x, canvas.height);
-                ctx.stroke();
-            }
-            
-            // 水平线
-            for (let y = 0; y <= canvas.height; y += gridSize) {
-                ctx.beginPath();
-                ctx.moveTo(0, y);
-                ctx.lineTo(canvas.width, y);
-                ctx.stroke();
-            }
-        }
-        
-        // 绘制单张图片（支持圆角）
-        function drawImage(img, isSelected) {
-            const x = img.x + img.width / 2;
-            const y = img.y + img.height / 2;
-            const radius = Math.min(settings.borderRadius, img.width / 2, img.height / 2);
-            
-            ctx.save();
-            ctx.translate(x, y);
-            ctx.rotate(img.rotation);
-            
-            // 创建圆角路径
-            ctx.beginPath();
-            ctx.moveTo(-img.width / 2 + radius, -img.height / 2);
-            ctx.arcTo(-img.width / 2, -img.height / 2, -img.width / 2, -img.height / 2 + radius, radius);
-            ctx.lineTo(-img.width / 2, img.height / 2 - radius);
-            ctx.arcTo(-img.width / 2, img.height / 2, -img.width / 2 + radius, img.height / 2, radius);
-            ctx.lineTo(img.width / 2 - radius, img.height / 2);
-            ctx.arcTo(img.width / 2, img.height / 2, img.width / 2, img.height / 2 - radius, radius);
-            ctx.lineTo(img.width / 2, -img.height / 2 + radius);
-            ctx.arcTo(img.width / 2, -img.height / 2, img.width / 2 - radius, -img.height / 2, radius);
-            ctx.closePath();
-            
-            // 裁剪并绘制图片
-            ctx.clip();
-            ctx.drawImage(
-                img.element,
-                -img.width / 2,
-                -img.height / 2,
-                img.width,
-                img.height
-            );
-            
-            // 绘制边框
-            if (settings.borderWidth > 0) {
-                ctx.strokeStyle = isSelected ? '#f72585' : '#4361ee';
-                ctx.lineWidth = isSelected ? settings.borderWidth + 2 : settings.borderWidth;
-                ctx.stroke();
-            }
-            
-            ctx.restore();
-        }
-        
-        // 拖拽功能
-        let isDragging = false;
-        let dragOffsetX = 0;
-        let dragOffsetY = 0;
-        
-        function startDrag(e) {
-            const rect = canvas.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-            
-            // 寻找被点击的图片
-            for (let i = images.length - 1; i >= 0; i--) {
-                const img = images[i];
-                if (x >= img.x && x <= img.x + img.width &&
-                    y >= img.y && y <= img.y + img.height) {
-                    
-                    selectedImageIndex = i;
-                    img.isDragging = true;
-                    isDragging = true;
-                    
-                    dragOffsetX = x - img.x;
-                    dragOffsetY = y - img.y;
-                    
-                    updateImagePreviews();
-                    draw();
-                    break;
-                }
-            }
-        }
-        
-        function handleDrag(e) {
-            if (!isDragging || selectedImageIndex < 0) return;
-            
-            const rect = canvas.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-            
-            const img = images[selectedImageIndex];
-            img.x = x - dragOffsetX;
-            img.y = y - dragOffsetY;
-            
-            draw();
-        }
-        
-        function stopDrag() {
-            if (selectedImageIndex >= 0) {
-                images[selectedImageIndex].isDragging = false;
-            }
-            isDragging = false;
-        }
-        
-        // 滚轮缩放
-        function handleWheel(e) {
-            if (selectedImageIndex < 0) return;
-            
-            e.preventDefault();
-            const img = images[selectedImageIndex];
-            const delta = e.deltaY > 0 ? 0.9 : 1.1;
-            
-            img.scale *= delta;
-            img.scale = Math.max(0.1, Math.min(3, img.scale));
-            img.width = img.element.width * img.scale;
-            img.height = img.element.height * img.scale;
-            
-            draw();
-        }
-        
-        // 双击旋转
-        function handleDoubleClick(e) {
-            const rect = canvas.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-            
-            for (let i = images.length - 1; i >= 0; i--) {
-                const img = images[i];
-                if (x >= img.x && x <= img.x + img.width &&
-                    y >= img.y && y <= img.y + img.height) {
-                    
-                    img.rotation += Math.PI / 2;
-                    draw();
-                    break;
-                }
-            }
-        }
-        
-        // 重置布局
-        function resetLayout() {
-            if (images.length === 0) return;
-            applyLayout();
-        }
-        
-        // 清空所有
-        function clearAll() {
-            if (images.length === 0 || confirm('确定要清空所有图片吗？')) {
-                images = [];
-                selectedImageIndex = -1;
-                updateImagePreviews();
-                updateImageCount();
-                initCanvas();
-            }
-        }
-        
-        // 导出图片
-        function exportImage() {
-            if (images.length === 0) {
-                alert('请先上传图片！');
-                return;
-            }
-            
-            const link = document.createElement('a');
-            link.download = `拼图_${new Date().getTime()}.png`;
-            
-            // 创建高质量的导出画布
-            const exportCanvas = document.createElement('canvas');
-            exportCanvas.width = canvas.width;
-            exportCanvas.height = canvas.height;
-            const exportCtx = exportCanvas.getContext('2d');
-            
-            // 绘制背景
-            exportCtx.fillStyle = settings.backgroundColor;
-            exportCtx.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
-            
-            // 绘制所有图片
-            images.forEach(img => {
-                const x = img.x + img.width / 2;
-                const y = img.y + img.height / 2;
-                const radius = Math.min(settings.borderRadius, img.width / 2, img.height / 2);
-                
-                exportCtx.save();
-                exportCtx.translate(x, y);
-                exportCtx.rotate(img.rotation);
-                
-                // 创建圆角路径
-                exportCtx.beginPath();
-                exportCtx.moveTo(-img.width / 2 + radius, -img.height / 2);
-                exportCtx.arcTo(-img.width / 2, -img.height / 2, -img.width / 2, -img.height / 2 + radius, radius);
-                exportCtx.lineTo(-img.width / 2, img.height / 2 - radius);
-                exportCtx.arcTo(-img.width / 2, img.height / 2, -img.width / 2 + radius, img.height / 2, radius);
-                exportCtx.lineTo(img.width / 2 - radius, img.height / 2);
-                exportCtx.arcTo(img.width / 2, img.height / 2, img.width / 2, img.height / 2 - radius, radius);
-                exportCtx.lineTo(img.width / 2, -img.height / 2 + radius);
-                exportCtx.arcTo(img.width / 2, -img.height / 2, img.width / 2 - radius, -img.height / 2, radius);
-                exportCtx.closePath();
-                
-                // 裁剪并绘制图片
-                exportCtx.clip();
-                exportCtx.drawImage(
-                    img.element,
-                    -img.width / 2,
-                    -img.height / 2,
-                    img.width,
-                    img.height
-                );
-                
-                exportCtx.restore();
-            });
-            
-            link.href = exportCanvas.toDataURL('image/png');
-            link.click();
-        }
-        
-        // 复制到剪贴板（现代浏览器）
-        async function copyToClipboard() {
-            if (images.length === 0) {
-                alert('请先上传图片！');
-                return;
-            }
-            
-            try {
-                canvas.toBlob(async (blob) => {
-                    await navigator.clipboard.write([
-                        new ClipboardItem({
-                            [blob.type]: blob
-                        })
-                    ]);
-                    alert('图片已复制到剪贴板！');
+                    removeImage(image.id);
                 });
-            } catch (err) {
-                alert('复制失败，请使用导出功能保存图片。');
+                
+                // 点击选择/取消选择图片
+                item.addEventListener('click', (e) => {
+                    if (e.target === removeBtn) return;
+                    
+                    toggleSelectImage(image.id);
+                });
+                
+                // 拖拽功能
+                item.setAttribute('draggable', 'true');
+                item.addEventListener('dragstart', (e) => {
+                    e.dataTransfer.setData('text/plain', index);
+                    item.classList.add('dragging');
+                });
+                
+                item.addEventListener('dragend', () => {
+                    item.classList.remove('dragging');
+                });
+                
+                item.appendChild(img);
+                item.appendChild(removeBtn);
+                gallery.appendChild(item);
+            });
+            
+            // 添加拖放区域事件监听
+            setupDragAndDrop();
+        }
+        
+        // 设置拖放功能
+        function setupDragAndDrop() {
+            const items = document.querySelectorAll('.gallery-item');
+            
+            items.forEach(item => {
+                item.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    item.classList.add('drag-over');
+                });
+                
+                item.addEventListener('dragleave', () => {
+                    item.classList.remove('drag-over');
+                });
+                
+                item.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    item.classList.remove('drag-over');
+                    
+                    const fromIndex = parseInt(e.dataTransfer.getData('text/plain'));
+                    const toIndex = Array.from(items).indexOf(item);
+                    
+                    if (fromIndex !== toIndex) {
+                        // 移动图片
+                        const movedImage = images.splice(fromIndex, 1)[0];
+                        images.splice(toIndex, 0, movedImage);
+                        
+                        // 重新渲染
+                        renderGallery();
+                    }
+                });
+            });
+        }
+        
+        // 切换选择图片
+        function toggleSelectImage(id) {
+            if (selectedImages.has(id)) {
+                selectedImages.delete(id);
+            } else {
+                selectedImages.add(id);
+            }
+            
+            renderGallery();
+        }
+        
+        // 删除图片
+        function removeImage(id) {
+            const index = images.findIndex(img => img.id === id);
+            if (index !== -1) {
+                images.splice(index, 1);
+                selectedImages.delete(id);
+                renderGallery();
             }
         }
         
-        // 初始化应用
-        function initApp() {
-            initCanvas();
-            initEvents();
-            updateCurrentLayout();
+        // 添加图片
+        function addImages() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*';
+            input.multiple = true;
             
-            // 添加一些示例提示
-            console.log('智能拼图工具已加载！');
-            console.log('功能：网格布局、瀑布流、拼贴画、自由排列');
-            console.log('操作：拖拽移动、滚轮缩放、双击旋转');
+            input.addEventListener('change', (e) => {
+                const files = Array.from(e.target.files);
+                
+                files.forEach((file, index) => {
+                    const reader = new FileReader();
+                    
+                    reader.onload = (event) => {
+                        const newImage = {
+                            id: `uploaded-${Date.now()}-${index}`,
+                            url: event.target.result,
+                            name: file.name
+                        };
+                        
+                        images.push(newImage);
+                        
+                        // 如果是最后一张图片，重新渲染
+                        if (index === files.length - 1) {
+                            renderGallery();
+                        }
+                    };
+                    
+                    reader.readAsDataURL(file);
+                });
+            });
+            
+            input.click();
         }
         
-        // 启动应用
-        window.addEventListener('DOMContentLoaded', initApp);
+        // 清空所有图片
+        function clearAllImages() {
+            if (images.length === 0) return;
+            
+            if (confirm('确定要清空所有图片吗？')) {
+                images = [];
+                selectedImages.clear();
+                renderGallery();
+            }
+        }
+        
+        // 随机排列图片
+        function randomizeImages() {
+            if (images.length <= 1) return;
+            
+            // Fisher-Yates 洗牌算法
+            for (let i = images.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [images[i], images[j]] = [images[j], images[i]];
+            }
+            
+            renderGallery();
+        }
+        
+        // 更新间距显示
+        function updateSpacingDisplay() {
+            const value = spacingSlider.value;
+            spacingDisplay.textContent = `${value}px`;
+            spacingValue.textContent = value;
+            
+            // 更新拼图间距
+            if (images.length > 0) {
+                gallery.style.gap = `${value}px`;
+                const columns = parseInt(columnsSlider.value);
+                gallery.style.gridTemplateColumns = `repeat(auto-fill, minmax(calc((100% - ${(columns-1)*value}px)/${columns}), 1fr))`;
+            }
+        }
+        
+        // 更新列数显示
+        function updateColumnsDisplay() {
+            const value = columnsSlider.value;
+            columnsDisplay.textContent = value;
+            columnsValue.textContent = value;
+            
+            // 更新拼图列数
+            if (images.length > 0) {
+                const spacing = parseInt(spacingSlider.value);
+                gallery.style.gridTemplateColumns = `repeat(auto-fill, minmax(calc((100% - ${(value-1)*spacing}px)/${value}), 1fr))`;
+            }
+        }
+        
+        // 更新行高显示
+        function updateRowHeightDisplay() {
+            const value = rowHeightSlider.value;
+            rowHeightDisplay.textContent = `${value}px`;
+            rowHeightValue.textContent = value;
+            
+            // 更新拼图行高
+            if (images.length > 0) {
+                gallery.style.gridAutoRows = `${value}px`;
+            }
+        }
+        
+        // 事件监听
+        spacingSlider.addEventListener('input', updateSpacingDisplay);
+        columnsSlider.addEventListener('input', updateColumnsDisplay);
+        rowHeightSlider.addEventListener('input', updateRowHeightDisplay);
+        addImagesBtn.addEventListener('click', addImages);
+        clearBtn.addEventListener('click', clearAllImages);
+        randomBtn.addEventListener('click', randomizeImages);
+        
+        // 初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            initSampleImages();
+        });
     </script>
 </body>
 </html>
