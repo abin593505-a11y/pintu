@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<title>简易图片拼接工具</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  body { margin:0; font-family:Arial,sans-serif; background:#f0f2f5; overflow:hidden; }
+  #toolbar {
+    position:fixed; top:0; left:0; right:0; height:70px; background:#fff;
+    box-shadow:0 2px 10px rgba(0,0,0,0.1); display:flex; align-items:center;
+    gap:10px; padding:0 15px; flex-wrap:wrap; z-index:100;
+  }
+  button, input, select { padding:6px 12px; border-radius:6px; border:1px solid #ccc; }
+  button { background:#409eff; color:white; border:none; cursor:pointer; }
+  button:hover { background:#66b1ff; }
+  #container { position:absolute; inset:70px 0 0 0; overflow:auto; background:#e9ecef; }
+  #canvas-wrapper {
+    position:relative; margin:20px auto; min-width:600px; min-height:400px;
+    background: linear-gradient(45deg,#eee 25%,transparent 25%,transparent 75%,#eee 75%),
+                linear-gradient(45deg,#eee 25%,transparent 25%,transparent 75%,#eee 75%);
+    background-size:30px 30px; box-shadow:0 0 20px rgba(0,0,0,0.15);
+  }
+  #canvas { position:absolute; inset:0; pointer-events:none; }
+  .resize-handle {
+    position:absolute; width:16px; height:16px; background:#409eff;
+    border:3px solid white; border-radius:50%; cursor:pointer; z-index:20;
+  }
+  .layer {
+    position:absolute; cursor:move; user-select:none; touch-action:none;
+    transform-origin:center; transition:all 0.1s; z-index:10;
+  }
+  .img-layer { background:#fff; }
+  .text-layer {
+    padding:8px; min-width:60px; min-height:24px; background:rgba(255,255,255,0.8);
+    border:1px dashed #999; font-size:18px; color:#000; cursor:text;
+  }
+  .layer.selected { outline:2px solid #409eff; box-shadow:0 0 12px rgba(64,158,255,0.5); }
+  .rotate-handle {
+    position:absolute; top:-20px; left:50%; transform:translateX(-50%);
+    width:24px; height:24px; background:#409eff; border:3px solid white;
+    border-radius:50%; cursor:grab; display:none; z-index:11;
+  }
+  .layer.selected .rotate-handle { display:block; }
+</style>
+</head>
+<body>
+
+<div id="toolbar">
+  <button onclick="document.getElementById('file').click()">+ 图片</button>
+  <input type="file" id="file" multiple accept="image/*" style="display:none">
+
+  <button onclick="document.getElementById('bgfile').click()">背景图</button>
+  <input type="file" id="bgfile" accept="image/*" style="display:none">
+
+  <button id="rmbg" onclick="removeBg()" style="display:none">移除背景</button>
+
+  <button onclick="addText()">+ 文字</button>
+
+  <button onclick="layout(1)">九宫格</button>
+  <button onclick="layout(2)">横向</button>
+  <button onclick="layout(3)">瀑布</button>
+  <button onclick="layout(4)">智能</button>
+
+  <div><label>间距</label><input type="range" id="mg" min="0" max="60" value="20"><span id="mgv">20</span></div>
+  <div><label>圆角</label><input type="range" id="rd" min="0" max="50" value="8"><span id="rdv">8</span></div>
+  <div><label>阴影</label><input type="checkbox" id="shd" checked></div>
+  <div><label>背景色</label><input type="color" id="bgc" value="#ffffff"></div>
+
+  <button onclick="resetAll()">重置</button>
+  <button onclick="save()">导出 PNG</button>
+</div>
+
+<div id="container">
+  <div id="cw">
+    <canvas id="c"></canvas>
+    <div class="resize-handle" id="ht"></div><div class="resize-handle" id="hb"></div>
+    <div class="resize-handle" id="hl"></div><div class="resize-handle" id="hr"></div>
+    <div class="resize-handle" id="htl"></div><div class="resize-handle" id="htr"></div>
+    <div class="resize-handle" id="hbl"></div><div class="resize-handle" id="hbr"></div>
+  </div>
+</div>
+
+<script>
+const cw = document.getElementById('cw');
+const c = document.getElementById('c');
+const ctx = c.getContext('2d');
+let layers = [];
+let sel = null;
+let dragging = false, dragX, dragY;
+let rotating = false, rotStart;
+let resizing = false, resizeDir;
+let bgImg = null, bgBlur = 0, bgOpacity = 1, bgFit = 'cover';
+
+function resize(w=1200, h=900) {
+  c.width = w; c.height = h;
+  cw.style.width = w+'px'; cw.style.height = h+'px';
+  drawBg();
+}
+resize();
+
+function drawBg() {
+  ctx.clearRect(0,0,c.width,c.height);
+  if (!bgImg) return;
+  ctx.globalAlpha = bgOpacity;
+  ctx.filter = `blur(${bgBlur}px)`;
+  let r = Math.max(c.width/bgImg.width, c.height/bgImg.height);
+  let nw = bgImg.width*r, nh = bgImg.height*r;
+  let nx = (c.width-nw)/2, ny = (c.height-nh)/2;
+  if (bgFit === 'contain') r = Math.min(c.width/bgImg.width, c.height/bgImg.height), nw = bgImg.width*r, nh = bgImg.height*r, nx = (c.width-nw)/2, ny = (c.height-nh)/2;
+  ctx.drawImage(bgImg, nx, ny, nw, nh);
+  ctx.filter = 'none'; ctx.globalAlpha = 1;
+}
+
+document.getElementById('file').onchange = e => {
+  [...e.target.files].forEach(f => {
+    let r = new FileReader();
+    r.onload = ev => {
+      let img = new Image();
+      img.onload = () => addLayer(img);
+      img.src = ev.target.result;
+    };
+    r.readAsDataURL(f);
+  });
+};
+
+document.getElementById('bgfile').onchange = e => {
+  let f = e.target.files[0];
+  if (!f) return;
+  let r = new FileReader();
+  r.onload = ev => {
+    bgImg = new Image();
+    bgImg.onload = drawBg;
+    bgImg.src = ev.target.result;
+    document.getElementById('rmbg').style.display = 'inline';
+  };
+  r.readAsDataURL(f);
+};
+
+function removeBg() {
+  bgImg = null;
+  document.getElementById('rmbg').style.display = 'none';
+  drawBg();
+}
+
+document.getElementById('bgBlur').oninput = e => {
+  bgBlur = +e.target.value;
+  drawBg();
+};
+
+document.getElementById('bgc').oninput = e => {
+  cw.style.backgroundColor = e.target.value;
+  cw.style.backgroundImage = e.target.value==='#ffffff' ? 'linear-gradient(45deg,#eee 25%,transparent 25%,transparent 75%,#eee 75%),linear-gradient(45deg,#eee 25%,transparent 25%,transparent 75%,#eee 75%)' : 'none';
+};
+
+function addLayer(img) {
+  let s = Math.min(400/img.width, 400/img.height, 1);
+  let w = img.width*s, h = img.height*s;
+  let div = document.createElement('div');
+  div.className = 'layer img-layer';
+  div.style.width = w+'px';
+  div.style.height = h+'px';
+  let im = document.createElement('img');
+  im.src = img.src; im.style.width='100%'; im.style.height='100%';
+  div.appendChild(im);
+  let rh = document.createElement('div'); rh.className = 'rotate-handle'; div.appendChild(rh);
+  cw.appendChild(div);
+
+  let layer = {el:div, img, rot:0, flipH:1, flipV:1};
+  layers.push(layer);
+  bindLayer(layer);
+  updatePos(layer, (c.width-w)/2 + (Math.random()*80-40), (c.height-h)/2 + (Math.random()*80-40));
+  select(layer);
+  applyStyle();
+}
+
+function addText() {
+  let div = document.createElement('div');
+  div.className = 'layer text-layer';
+  div.contentEditable = true;
+  div.textContent = '双击编辑文字';
+  div.style.left = '100px'; div.style.top = '100px';
+  let rh = document.createElement('div'); rh.className = 'rotate-handle'; div.appendChild(rh);
+  cw.appendChild(div);
+
+  let layer = {el:div, text:true, rot:0};
+  layers.push(layer);
+  bindLayer(layer);
+  select(layer);
+}
+
+function bindLayer(l) {
+  let el = l.el, resizing = false, sx,sy,sw,sh;
+  el.addEventListener('pointerdown', e => {
+    if (e.target.className === 'rotate-handle') {
+      rotating = true;
+      let rect = el.getBoundingClientRect();
+      rotStart = Math.atan2(e.clientY - rect.top - rect.height/2, e.clientX - rect.left - rect.width/2);
+      select(l);
+      return;
+    }
+    select(l);
+    dragX = e.clientX - rect.left;
+    dragY = e.clientY - rect.top;
+    dragging = true;
+    if (e.offsetX > rect.width-30 && e.offsetY > rect.height-30) {
+      resizing = true;
+      sw = parseFloat(el.style.width);
+      sh = parseFloat(el.style.height);
+      sx = e.clientX; sy = e.clientY;
+    }
+  });
+  document.addEventListener('pointermove', e => {
+    if (rotating && sel === l) {
+      let rect = el.getBoundingClientRect();
+      let ang = Math.atan2(e.clientY - rect.top - rect.height/2, e.clientX - rect.left - rect.width/2);
+      l.rot = (l.rot + (ang - rotStart) * 180 / Math.PI + 360) % 360;
+      el.style.transform = `rotate(${l.rot}deg) scale(${l.flipH||1},${l.flipV||1})`;
+      rotStart = ang;
+    } else if (dragging && sel === l) {
+      let x = e.clientX - dragX - cw.getBoundingClientRect().left;
+      let y = e.clientY - dragY - cw.getBoundingClientRect().top;
+      updatePos(l, x, y);
+    } else if (resizing && sel === l) {
+      let nw = Math.max(40, sw + e.clientX - sx);
+      let ratio = sw / sh;
+      el.style.width = nw + 'px';
+      el.style.height = nw / ratio + 'px';
+    }
+  });
+  document.addEventListener('pointerup', () => {
+    dragging = rotating = resizing = false;
+  });
+  el.addEventListener('wheel', e => {
+    e.preventDefault();
+    if (sel !== l) return;
+    let d = e.deltaY > 0 ? 0.92 : 1.085;
+    let w = parseFloat(el.style.width) * d;
+    let h = parseFloat(el.style.height) * d;
+    el.style.width = Math.max(40, w) + 'px';
+    el.style.height = Math.max(40, h) + 'px';
+  });
+}
+
+function select(l) {
+  document.querySelectorAll('.layer').forEach(el=>el.classList.remove('selected'));
+  if (l) l.el.classList.add('selected');
+  sel = l;
+}
+
+function updatePos(l, x, y) {
+  l.el.style.left = x + 'px';
+  l.el.style.top = y + 'px';
+}
+
+function applyStyle() {
+  document.querySelectorAll('.layer').forEach(el => {
+    el.style.borderRadius = document.getElementById('rd').value + 'px';
+    el.style.boxShadow = document.getElementById('shd').checked ? '0 4px 12px rgba(0,0,0,0.18)' : 'none';
+  });
+}
+
+document.getElementById('rd').oninput = applyStyle;
+document.getElementById('shd').onchange = applyStyle;
+document.getElementById('mg').oninput = e => document.getElementById('mgv').textContent = e.target.value;
+
+// 简单布局函数（可自行扩展）
+function layout(type) {
+  if (!layers.length) return;
+  let m = +document.getElementById('mg').value;
+  let w = c.width - m*2;
+  let h = c.height - m*2;
+  let x = m, y = m;
+
+  if (type === 1) { // 九宫格
+    let s = Math.sqrt(layers.length);
+    let gw = w / 3, gh = h / 3;
+    layers.forEach((l,i) => {
+      let r = Math.floor(i/3), c = i%3;
+      l.el.style.width = gw + 'px';
+      l.el.style.height = gh + 'px';
+      updatePos(l, m + c*gw, m + r*gh);
+    });
+  } else if (type === 4) { // 智能（简单版：大图居中，小图环绕）
+    layers.sort((a,b) => b.img.width*b.img.height - a.img.width*a.img.height);
+    let center = layers[0];
+    updatePos(center, (c.width-center.el.offsetWidth)/2, (c.height-center.el.offsetHeight)/2);
+    // 其余小图环绕（可扩展）
+  } else {
+    // 横向 / 瀑布 简单实现
+    layers.forEach(l => {
+      updatePos(l, x, y);
+      x += l.el.offsetWidth + m;
+      if (x > c.width - m*2) { x = m; y += l.el.offsetHeight + m; }
+    });
+  }
+}
+
+function save() {
+  let temp = document.createElement('canvas');
+  temp.width = c.width; temp.height = c.height;
+  let tctx = temp.getContext('2d');
+  tctx.fillStyle = document.getElementById('bgc').value;
+  tctx.fillRect(0,0,temp.width,temp.height);
+  if (bgImg) {
+    let r = Math.max(temp.width/bgImg.width, temp.height/bgImg.height);
+    let nw = bgImg.width*r, nh = bgImg.height*r;
+    tctx.drawImage(bgImg, (temp.width-nw)/2, (temp.height-nh)/2, nw, nh);
+  }
+  layers.forEach(l => {
+    let rect = l.el.getBoundingClientRect();
+    let bx = cw.getBoundingClientRect();
+    let x = rect.left - bx.left;
+    let y = rect.top - bx.top;
+    tctx.save();
+    tctx.translate(x + rect.width/2, y + rect.height/2);
+    tctx.rotate((l.rot||0) * Math.PI / 180);
+    tctx.drawImage(l.img || l.el, -rect.width/2, -rect.height/2, rect.width, rect.height);
+    tctx.restore();
+  });
+  let a = document.createElement('a');
+  a.href = temp.toDataURL('image/png');
+  a.download = 'collage.png';
+  a.click();
+}
+
+function resetAll() {
+  layers = [];
+  cw.querySelectorAll('.layer').forEach(el=>el.remove());
+  bgImg = null;
+  document.getElementById('rmbg').style.display = 'none';
+  resize();
+  drawBg();
+}
+
+// 画布拖拽调整大小（简化版）
+['ht','hb','hl','hr','htl','htr','hbl','hbr'].forEach(id => {
+  document.getElementById(id).onpointerdown = e => {
+    isResizingCanvas = true;
+    resizeDir = id;
+  };
+});
+document.onpointermove = e => {
+  if (!isResizingCanvas) return;
+  let r = cw.getBoundingClientRect();
+  let nw = c.width, nh = c.height;
+  if (resizeDir.includes('r')) nw = Math.max(400, e.clientX - r.left + 10);
+  if (resizeDir.includes('b')) nh = Math.max(300, e.clientY - r.top + 10);
+  resize(nw, nh);
+};
+document.onpointerup = () => isResizingCanvas = false;
+</script>
+</body>
+</html>
