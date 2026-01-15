@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>自适应图片拼图</title>
+    <title>自适应图片拼图 - 行列分开控制</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
@@ -21,7 +21,7 @@
         }
         
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
         }
         
@@ -92,6 +92,17 @@
             margin-bottom: 8px;
             font-weight: 600;
             color: #34495e;
+        }
+        
+        .control-row {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .control-row .control-group {
+            flex: 1;
+            margin-bottom: 0;
         }
         
         .slider-container {
@@ -189,18 +200,25 @@
             background: #8e44ad;
         }
         
+        #saveBtn {
+            background: #f39c12;
+        }
+        
+        #saveBtn:hover {
+            background: #d68910;
+        }
+        
         .gallery {
             flex: 1;
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-            grid-auto-rows: 180px;
-            gap: 10px;
             overflow-y: auto;
             padding: 10px;
             background: #f8f9fa;
             border-radius: 10px;
-            min-height: 400px;
-            transition: gap 0.3s ease;
+            min-height: 500px;
+            transition: all 0.3s ease;
+            align-items: start;
+            justify-items: center;
         }
         
         .gallery-item {
@@ -210,6 +228,7 @@
             box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
             transition: all 0.3s ease;
             cursor: pointer;
+            width: 100%;
         }
         
         .gallery-item:hover {
@@ -234,10 +253,26 @@
             transform: scale(1.05);
         }
         
-        .gallery-item .remove-btn {
+        .gallery-item .controls-overlay {
             position: absolute;
-            top: 8px;
-            right: 8px;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transform: translateY(-100%);
+            transition: transform 0.3s ease;
+            z-index: 10;
+        }
+        
+        .gallery-item:hover .controls-overlay {
+            transform: translateY(0);
+        }
+        
+        .gallery-item .remove-btn {
             background: rgba(231, 76, 60, 0.9);
             color: white;
             width: 28px;
@@ -247,16 +282,22 @@
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-        
-        .gallery-item:hover .remove-btn {
-            opacity: 1;
         }
         
         .gallery-item .remove-btn:hover {
             background: #c0392b;
+        }
+        
+        .gallery-item .height-control {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: white;
+            font-size: 0.9rem;
+        }
+        
+        .gallery-item .height-control input {
+            width: 80px;
         }
         
         .empty-state {
@@ -268,6 +309,7 @@
             color: #7f8c8d;
             text-align: center;
             padding: 40px 20px;
+            grid-column: 1 / -1;
         }
         
         .empty-state i {
@@ -301,6 +343,88 @@
             line-height: 1.5;
         }
         
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+        
+        .modal h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+        
+        .modal-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 25px;
+        }
+        
+        .modal-buttons button {
+            min-width: 120px;
+        }
+        
+        .save-options {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .save-option {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .save-option:hover {
+            background: #f0f7ff;
+            border-color: #3498db;
+        }
+        
+        .save-option.selected {
+            background: #e8f4fc;
+            border-color: #3498db;
+        }
+        
+        .save-option i {
+            font-size: 1.5rem;
+            color: #3498db;
+        }
+        
+        .save-option .option-info h4 {
+            margin-bottom: 5px;
+            color: #2c3e50;
+        }
+        
+        .save-option .option-info p {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+        }
+        
         footer {
             text-align: center;
             padding: 20px;
@@ -314,24 +438,24 @@
                 flex-direction: column;
             }
             
-            .gallery {
-                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-                grid-auto-rows: 150px;
-            }
-            
             h1 {
                 font-size: 2rem;
+            }
+            
+            .control-row {
+                flex-direction: column;
+                gap: 10px;
             }
         }
         
         @media (max-width: 480px) {
-            .gallery {
-                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-                grid-auto-rows: 120px;
-            }
-            
             button {
                 min-width: 100%;
+            }
+            
+            .modal-content {
+                width: 95%;
+                padding: 20px;
             }
         }
     </style>
@@ -339,35 +463,37 @@
 <body>
     <div class="container">
         <header>
-            <h1><i class="fas fa-images"></i> 自适应图片拼图</h1>
-            <p class="subtitle">上传多种尺寸的图片，智能调整布局，创建完美拼图。使用间距控制调整图片间隔，支持拖拽排序和自定义选择。</p>
+            <h1><i class="fas fa-images"></i> 自适应图片拼图 - 行列分开控制</h1>
+            <p class="subtitle">上传多种尺寸的图片，每张图片可单独调整高度，行列数独立控制，创建完美拼图。使用间距控制调整图片间隔，支持拖拽排序和保存功能。</p>
         </header>
         
         <div class="main-content">
             <div class="controls">
                 <h2 class="section-title"><i class="fas fa-sliders-h"></i> 拼图控制</h2>
                 
+                <div class="control-row">
+                    <div class="control-group">
+                        <label for="columnsSlider"><i class="fas fa-columns"></i> 列数: <span id="columnsValue">3</span></label>
+                        <div class="slider-container">
+                            <input type="range" id="columnsSlider" min="1" max="8" value="3" step="1">
+                            <div class="slider-value" id="columnsDisplay">3</div>
+                        </div>
+                    </div>
+                    
+                    <div class="control-group">
+                        <label for="rowsSlider"><i class="fas fa-stream"></i> 行数: <span id="rowsValue">3</span></label>
+                        <div class="slider-container">
+                            <input type="range" id="rowsSlider" min="1" max="8" value="3" step="1">
+                            <div class="slider-value" id="rowsDisplay">3</div>
+                        </div>
+                    </div>
+                </div>
+                
                 <div class="control-group">
                     <label for="spacingSlider"><i class="fas fa-arrows-alt-h"></i> 图片间距: <span id="spacingValue">10</span>px</label>
                     <div class="slider-container">
                         <input type="range" id="spacingSlider" min="0" max="30" value="10" step="1">
                         <div class="slider-value" id="spacingDisplay">10px</div>
-                    </div>
-                </div>
-                
-                <div class="control-group">
-                    <label for="columnsSlider"><i class="fas fa-columns"></i> 网格列数: <span id="columnsValue">4</span></label>
-                    <div class="slider-container">
-                        <input type="range" id="columnsSlider" min="2" max="8" value="4" step="1">
-                        <div class="slider-value" id="columnsDisplay">4</div>
-                    </div>
-                </div>
-                
-                <div class="control-group">
-                    <label for="rowHeightSlider"><i class="fas fa-arrows-alt-v"></i> 行高: <span id="rowHeightValue">180</span>px</label>
-                    <div class="slider-container">
-                        <input type="range" id="rowHeightSlider" min="100" max="300" value="180" step="10">
-                        <div class="slider-value" id="rowHeightDisplay">180px</div>
                     </div>
                 </div>
                 
@@ -378,6 +504,9 @@
                     <button id="randomBtn">
                         <i class="fas fa-random"></i> 随机排列
                     </button>
+                    <button id="saveBtn">
+                        <i class="fas fa-save"></i> 保存拼图
+                    </button>
                     <button id="clearBtn">
                         <i class="fas fa-trash-alt"></i> 清空拼图
                     </button>
@@ -387,16 +516,17 @@
                     <h3><i class="fas fa-info-circle"></i> 使用说明</h3>
                     <ul>
                         <li>点击"添加图片"上传本地图片</li>
+                        <li>使用列数和行数滑块分别控制拼图布局</li>
                         <li>使用间距滑块调整图片之间的间隔</li>
+                        <li>每张图片可单独调整高度（鼠标悬停显示控制面板）</li>
                         <li>拖拽图片可以重新排列顺序</li>
-                        <li>点击图片可以选中/取消选中</li>
-                        <li>鼠标悬停在图片上可显示删除按钮</li>
+                        <li>点击"保存拼图"可将拼图保存为图片</li>
                     </ul>
                 </div>
             </div>
             
             <div class="gallery-container">
-                <h2 class="section-title"><i class="fas fa-th"></i> 拼图预览</h2>
+                <h2 class="section-title"><i class="fas fa-th"></i> 拼图预览 (最多<span id="maxImages">9</span>张)</h2>
                 <div class="gallery" id="gallery">
                     <div class="empty-state" id="emptyState">
                         <i class="fas fa-cloud-upload-alt"></i>
@@ -406,8 +536,51 @@
             </div>
         </div>
         
+        <!-- 保存模态框 -->
+        <div class="modal" id="saveModal">
+            <div class="modal-content">
+                <h2><i class="fas fa-save"></i> 保存拼图</h2>
+                <p>选择保存拼图的方式：</p>
+                
+                <div class="save-options">
+                    <div class="save-option selected" data-format="png">
+                        <i class="fas fa-file-image"></i>
+                        <div class="option-info">
+                            <h4>保存为PNG图片</h4>
+                            <p>高质量无损格式，适合打印和分享</p>
+                        </div>
+                    </div>
+                    
+                    <div class="save-option" data-format="jpeg">
+                        <i class="fas fa-file-image"></i>
+                        <div class="option-info">
+                            <h4>保存为JPEG图片</h4>
+                            <p>压缩格式，文件较小，适合网络分享</p>
+                        </div>
+                    </div>
+                    
+                    <div class="save-option" data-format="dataURL">
+                        <i class="fas fa-code"></i>
+                        <div class="option-info">
+                            <h4>复制Data URL</h4>
+                            <p>获取图片Base64编码，可直接嵌入网页</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="modal-buttons">
+                    <button id="cancelSaveBtn">
+                        <i class="fas fa-times"></i> 取消
+                    </button>
+                    <button id="confirmSaveBtn" style="background-color: #f39c12;">
+                        <i class="fas fa-download"></i> 保存
+                    </button>
+                </div>
+            </div>
+        </div>
+        
         <footer>
-            <p>自适应图片拼图 &copy; 2023 | 支持多种图片尺寸 | 拖拽排序 | 可调节间距</p>
+            <p>自适应图片拼图 &copy; 2023 | 行列独立控制 | 每张图片单独调整高度 | 可调节间距 | 保存功能</p>
         </footer>
     </div>
     
@@ -421,38 +594,30 @@
         const columnsSlider = document.getElementById('columnsSlider');
         const columnsDisplay = document.getElementById('columnsDisplay');
         const columnsValue = document.getElementById('columnsValue');
-        const rowHeightSlider = document.getElementById('rowHeightSlider');
-        const rowHeightDisplay = document.getElementById('rowHeightDisplay');
-        const rowHeightValue = document.getElementById('rowHeightValue');
+        const rowsSlider = document.getElementById('rowsSlider');
+        const rowsDisplay = document.getElementById('rowsDisplay');
+        const rowsValue = document.getElementById('rowsValue');
+        const maxImagesElement = document.getElementById('maxImages');
         const addImagesBtn = document.getElementById('addImagesBtn');
         const clearBtn = document.getElementById('clearBtn');
         const randomBtn = document.getElementById('randomBtn');
+        const saveBtn = document.getElementById('saveBtn');
+        const saveModal = document.getElementById('saveModal');
+        const cancelSaveBtn = document.getElementById('cancelSaveBtn');
+        const confirmSaveBtn = document.getElementById('confirmSaveBtn');
         
         // 图片数组
         let images = [];
         let selectedImages = new Set();
+        let selectedSaveFormat = 'png';
         
-        // 初始化示例图片
-        const sampleImages = [
-            'https://images.unsplash.com/photo-1501854140801-50d01698950b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80',
-            'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80',
-            'https://images.unsplash.com/photo-1469474968028-56623f02e42e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80',
-            'https://images.unsplash.com/photo-1505142468610-359e7d316be0?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80',
-            'https://images.unsplash.com/photo-1518837695005-2083093ee35b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80',
-            'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80',
-            'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80',
-            'https://images.unsplash.com/photo-1475924156734-496f6cac6ec1?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80'
-        ];
-        
-        // 初始化加载示例图片
-        function initSampleImages() {
-            images = sampleImages.map((url, index) => ({
-                id: `sample-${index}`,
-                url: url,
-                name: `示例图片 ${index + 1}`
-            }));
-            
-            renderGallery();
+        // 更新最大图片数量显示
+        function updateMaxImages() {
+            const columns = parseInt(columnsSlider.value);
+            const rows = parseInt(rowsSlider.value);
+            const maxImages = columns * rows;
+            maxImagesElement.textContent = maxImages;
+            return maxImages;
         }
         
         // 渲染拼图
@@ -467,74 +632,155 @@
             
             emptyState.style.display = 'none';
             
-            // 更新网格间距
+            // 获取行列设置
+            const columns = parseInt(columnsSlider.value);
+            const rows = parseInt(rowsSlider.value);
             const spacing = parseInt(spacingSlider.value);
+            
+            // 设置网格布局
+            gallery.style.gridTemplateColumns = `repeat(${columns}, 1fr)`;
+            gallery.style.gridTemplateRows = `repeat(${rows}, auto)`;
             gallery.style.gap = `${spacing}px`;
             
-            // 更新网格列数
-            const columns = parseInt(columnsSlider.value);
-            gallery.style.gridTemplateColumns = `repeat(auto-fill, minmax(calc((100% - ${(columns-1)*spacing}px)/${columns}), 1fr))`;
-            
-            // 更新行高
-            const rowHeight = parseInt(rowHeightSlider.value);
-            gallery.style.gridAutoRows = `${rowHeight}px`;
+            // 计算网格总大小
+            const maxImages = columns * rows;
             
             // 创建图片元素
-            images.forEach((image, index) => {
-                const item = document.createElement('div');
-                item.className = 'gallery-item';
-                item.dataset.id = image.id;
-                
-                if (selectedImages.has(image.id)) {
-                    item.classList.add('selected');
+            for (let i = 0; i < maxImages; i++) {
+                if (i < images.length) {
+                    const image = images[i];
+                    const item = createGalleryItem(image, i);
+                    gallery.appendChild(item);
+                } else {
+                    // 创建空位
+                    const emptyCell = document.createElement('div');
+                    emptyCell.className = 'empty-cell';
+                    emptyCell.style.minHeight = '100px';
+                    emptyCell.style.border = '2px dashed #bdc3c7';
+                    emptyCell.style.borderRadius = '8px';
+                    emptyCell.style.display = 'flex';
+                    emptyCell.style.alignItems = 'center';
+                    emptyCell.style.justifyContent = 'center';
+                    emptyCell.style.color = '#7f8c8d';
+                    emptyCell.style.fontSize = '1.5rem';
+                    emptyCell.innerHTML = '<i class="fas fa-plus"></i>';
+                    gallery.appendChild(emptyCell);
                 }
-                
-                // 创建图片
-                const img = document.createElement('img');
-                img.src = image.url;
-                img.alt = image.name;
-                img.loading = 'lazy';
-                
-                // 创建删除按钮
-                const removeBtn = document.createElement('div');
-                removeBtn.className = 'remove-btn';
-                removeBtn.innerHTML = '<i class="fas fa-times"></i>';
-                removeBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    removeImage(image.id);
-                });
-                
-                // 点击选择/取消选择图片
-                item.addEventListener('click', (e) => {
-                    if (e.target === removeBtn) return;
-                    
-                    toggleSelectImage(image.id);
-                });
-                
-                // 拖拽功能
-                item.setAttribute('draggable', 'true');
-                item.addEventListener('dragstart', (e) => {
-                    e.dataTransfer.setData('text/plain', index);
-                    item.classList.add('dragging');
-                });
-                
-                item.addEventListener('dragend', () => {
-                    item.classList.remove('dragging');
-                });
-                
-                item.appendChild(img);
-                item.appendChild(removeBtn);
-                gallery.appendChild(item);
-            });
+            }
             
             // 添加拖放区域事件监听
             setupDragAndDrop();
         }
         
+        // 创建单个图片元素
+        function createGalleryItem(image, index) {
+            const item = document.createElement('div');
+            item.className = 'gallery-item';
+            item.dataset.id = image.id;
+            item.dataset.index = index;
+            
+            // 设置自定义高度
+            if (image.customHeight) {
+                item.style.height = `${image.customHeight}px`;
+            } else {
+                item.style.height = '200px';
+            }
+            
+            if (selectedImages.has(image.id)) {
+                item.classList.add('selected');
+            }
+            
+            // 创建图片容器
+            const imgContainer = document.createElement('div');
+            imgContainer.style.height = '100%';
+            imgContainer.style.overflow = 'hidden';
+            imgContainer.style.width = '100%';
+            
+            // 创建图片
+            const img = document.createElement('img');
+            img.src = image.url;
+            img.alt = image.name;
+            img.loading = 'lazy';
+            
+            // 创建控制面板（悬停显示）
+            const controlsOverlay = document.createElement('div');
+            controlsOverlay.className = 'controls-overlay';
+            
+            // 创建删除按钮
+            const removeBtn = document.createElement('div');
+            removeBtn.className = 'remove-btn';
+            removeBtn.innerHTML = '<i class="fas fa-times"></i>';
+            removeBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                removeImage(image.id);
+            });
+            
+            // 创建高度控制
+            const heightControl = document.createElement('div');
+            heightControl.className = 'height-control';
+            
+            const heightLabel = document.createElement('span');
+            heightLabel.textContent = '高度:';
+            
+            const heightInput = document.createElement('input');
+            heightInput.type = 'range';
+            heightInput.min = '80';
+            heightInput.max = '400';
+            heightInput.value = image.customHeight || '200';
+            heightInput.step = '10';
+            heightInput.style.width = '80px';
+            
+            const heightValue = document.createElement('span');
+            heightValue.textContent = `${heightInput.value}px`;
+            
+            heightInput.addEventListener('input', () => {
+                heightValue.textContent = `${heightInput.value}px`;
+                image.customHeight = parseInt(heightInput.value);
+                item.style.height = `${heightInput.value}px`;
+                imgContainer.style.height = `${heightInput.value}px`;
+            });
+            
+            heightControl.appendChild(heightLabel);
+            heightControl.appendChild(heightInput);
+            heightControl.appendChild(heightValue);
+            
+            controlsOverlay.appendChild(removeBtn);
+            controlsOverlay.appendChild(heightControl);
+            
+            // 点击选择/取消选择图片
+            item.addEventListener('click', (e) => {
+                if (e.target === removeBtn || e.target === heightInput || e.target.closest('.height-control')) {
+                    return;
+                }
+                
+                toggleSelectImage(image.id);
+            });
+            
+            // 拖拽功能
+            item.setAttribute('draggable', 'true');
+            item.addEventListener('dragstart', (e) => {
+                e.dataTransfer.setData('text/plain', index);
+                e.dataTransfer.setData('image/id', image.id);
+                item.classList.add('dragging');
+            });
+            
+            item.addEventListener('dragend', () => {
+                item.classList.remove('dragging');
+            });
+            
+            imgContainer.appendChild(img);
+            item.appendChild(imgContainer);
+            item.appendChild(controlsOverlay);
+            
+            return item;
+        }
+        
         // 设置拖放功能
         function setupDragAndDrop() {
             const items = document.querySelectorAll('.gallery-item');
+            const emptyCells = document.querySelectorAll('.empty-cell');
             
+            // 图片元素拖放
             items.forEach(item => {
                 item.addEventListener('dragover', (e) => {
                     e.preventDefault();
@@ -550,12 +796,55 @@
                     item.classList.remove('drag-over');
                     
                     const fromIndex = parseInt(e.dataTransfer.getData('text/plain'));
-                    const toIndex = Array.from(items).indexOf(item);
+                    const fromId = e.dataTransfer.getData('image/id');
+                    const toIndex = parseInt(item.dataset.index);
                     
                     if (fromIndex !== toIndex) {
                         // 移动图片
-                        const movedImage = images.splice(fromIndex, 1)[0];
-                        images.splice(toIndex, 0, movedImage);
+                        const movedImageIndex = images.findIndex(img => img.id === fromId);
+                        if (movedImageIndex !== -1) {
+                            const movedImage = images.splice(movedImageIndex, 1)[0];
+                            
+                            // 确保目标索引在范围内
+                            const insertIndex = Math.min(toIndex, images.length);
+                            images.splice(insertIndex, 0, movedImage);
+                            
+                            // 重新渲染
+                            renderGallery();
+                        }
+                    }
+                });
+            });
+            
+            // 空位拖放
+            emptyCells.forEach(cell => {
+                cell.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    cell.style.backgroundColor = 'rgba(189, 195, 199, 0.3)';
+                });
+                
+                cell.addEventListener('dragleave', () => {
+                    cell.style.backgroundColor = '';
+                });
+                
+                cell.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    cell.style.backgroundColor = '';
+                    
+                    const fromIndex = parseInt(e.dataTransfer.getData('text/plain'));
+                    const fromId = e.dataTransfer.getData('image/id');
+                    
+                    // 获取空位的索引（在网格中的位置）
+                    const cellIndex = Array.from(gallery.children).indexOf(cell);
+                    
+                    // 移动图片
+                    const movedImageIndex = images.findIndex(img => img.id === fromId);
+                    if (movedImageIndex !== -1) {
+                        const movedImage = images.splice(movedImageIndex, 1)[0];
+                        
+                        // 插入到对应位置
+                        const insertIndex = Math.min(cellIndex, images.length);
+                        images.splice(insertIndex, 0, movedImage);
                         
                         // 重新渲染
                         renderGallery();
@@ -594,6 +883,13 @@
             
             input.addEventListener('change', (e) => {
                 const files = Array.from(e.target.files);
+                const maxImages = updateMaxImages();
+                
+                // 检查图片数量是否超过限制
+                if (images.length + files.length > maxImages) {
+                    alert(`最多只能添加${maxImages}张图片。当前已有${images.length}张，您只能再添加${maxImages - images.length}张。`);
+                    return;
+                }
                 
                 files.forEach((file, index) => {
                     const reader = new FileReader();
@@ -602,7 +898,8 @@
                         const newImage = {
                             id: `uploaded-${Date.now()}-${index}`,
                             url: event.target.result,
-                            name: file.name
+                            name: file.name,
+                            customHeight: 200 // 默认高度
                         };
                         
                         images.push(newImage);
@@ -644,6 +941,151 @@
             renderGallery();
         }
         
+        // 保存拼图
+        function saveCollage() {
+            if (images.length === 0) {
+                alert('请先添加图片到拼图中！');
+                return;
+            }
+            
+            saveModal.style.display = 'flex';
+        }
+        
+        // 执行保存
+        function executeSave() {
+            saveModal.style.display = 'none';
+            
+            // 创建临时canvas来绘制拼图
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            
+            // 获取布局参数
+            const columns = parseInt(columnsSlider.value);
+            const rows = parseInt(rowsSlider.value);
+            const spacing = parseInt(spacingSlider.value);
+            const maxImages = columns * rows;
+            
+            // 计算每列最大宽度和每行最大高度
+            let columnWidths = new Array(columns).fill(0);
+            let rowHeights = new Array(rows).fill(0);
+            
+            // 只处理实际存在的图片
+            const imagesToProcess = images.slice(0, Math.min(images.length, maxImages));
+            
+            // 创建图片加载promise数组
+            const imagePromises = imagesToProcess.map((image, index) => {
+                return new Promise((resolve) => {
+                    const img = new Image();
+                    img.crossOrigin = 'anonymous';
+                    img.src = image.url;
+                    
+                    img.onload = () => {
+                        const col = index % columns;
+                        const row = Math.floor(index / columns);
+                        
+                        // 获取图片原始尺寸
+                        const aspectRatio = img.width / img.height;
+                        const targetHeight = image.customHeight || 200;
+                        const targetWidth = targetHeight * aspectRatio;
+                        
+                        // 更新列宽和行高
+                        columnWidths[col] = Math.max(columnWidths[col], targetWidth);
+                        rowHeights[row] = Math.max(rowHeights[row], targetHeight);
+                        
+                        resolve({img, image, index});
+                    };
+                    
+                    img.onerror = () => {
+                        console.error(`图片加载失败: ${image.name}`);
+                        resolve(null); // 即使失败也继续
+                    };
+                });
+            });
+            
+            // 所有图片加载完成后计算总尺寸并绘制
+            Promise.all(imagePromises).then((results) => {
+                // 过滤掉加载失败的图片
+                const validResults = results.filter(r => r !== null);
+                
+                // 计算总宽度和高度
+                const totalWidth = columnWidths.reduce((sum, width) => sum + width, 0) + (columns - 1) * spacing;
+                const totalHeight = rowHeights.reduce((sum, height) => sum + height, 0) + (rows - 1) * spacing;
+                
+                // 设置canvas尺寸
+                canvas.width = totalWidth;
+                canvas.height = totalHeight;
+                
+                // 绘制白色背景
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(0, 0, totalWidth, totalHeight);
+                
+                // 绘制每张图片
+                let xPos = 0;
+                let yPos = 0;
+                let currentRow = 0;
+                
+                validResults.forEach((result, i) => {
+                    const {img, image, index} = result;
+                    const col = index % columns;
+                    const row = Math.floor(index / columns);
+                    
+                    // 如果换行，重置xPos并增加yPos
+                    if (row > currentRow) {
+                        xPos = 0;
+                        yPos += rowHeights[currentRow] + spacing;
+                        currentRow = row;
+                    }
+                    
+                    // 计算调整后的尺寸
+                    const aspectRatio = img.width / img.height;
+                    const targetHeight = image.customHeight || 200;
+                    const targetWidth = targetHeight * aspectRatio;
+                    
+                    // 计算图片在网格中的位置（居中显示）
+                    const cellWidth = columnWidths[col];
+                    const cellHeight = rowHeights[row];
+                    const xOffset = (cellWidth - targetWidth) / 2;
+                    const yOffset = (cellHeight - targetHeight) / 2;
+                    
+                    // 绘制图片
+                    ctx.drawImage(img, xPos + xOffset, yPos + yOffset, targetWidth, targetHeight);
+                    
+                    // 更新xPos
+                    xPos += cellWidth + spacing;
+                });
+                
+                // 执行保存操作
+                if (selectedSaveFormat === 'dataURL') {
+                    // 复制Data URL到剪贴板
+                    const dataURL = canvas.toDataURL('image/png');
+                    navigator.clipboard.writeText(dataURL).then(() => {
+                        alert('Data URL已复制到剪贴板！');
+                    }).catch(err => {
+                        console.error('复制失败: ', err);
+                        alert('复制失败，请手动复制控制台输出');
+                        console.log('Data URL:', dataURL);
+                    });
+                } else {
+                    // 保存为图片文件
+                    const format = selectedSaveFormat === 'jpeg' ? 'image/jpeg' : 'image/png';
+                    const quality = selectedSaveFormat === 'jpeg' ? 0.9 : 1.0;
+                    
+                    canvas.toBlob((blob) => {
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `拼图-${columns}x${rows}-${new Date().getTime()}.${selectedSaveFormat}`;
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        URL.revokeObjectURL(url);
+                        
+                        alert(`拼图已保存为${selectedSaveFormat.toUpperCase()}文件！`);
+                    }, format, quality);
+                }
+            });
+        }
+        
         // 更新间距显示
         function updateSpacingDisplay() {
             const value = spacingSlider.value;
@@ -653,8 +1095,6 @@
             // 更新拼图间距
             if (images.length > 0) {
                 gallery.style.gap = `${value}px`;
-                const columns = parseInt(columnsSlider.value);
-                gallery.style.gridTemplateColumns = `repeat(auto-fill, minmax(calc((100% - ${(columns-1)*value}px)/${columns}), 1fr))`;
             }
         }
         
@@ -664,36 +1104,68 @@
             columnsDisplay.textContent = value;
             columnsValue.textContent = value;
             
-            // 更新拼图列数
+            updateMaxImages();
+            
+            // 更新拼图布局
             if (images.length > 0) {
-                const spacing = parseInt(spacingSlider.value);
-                gallery.style.gridTemplateColumns = `repeat(auto-fill, minmax(calc((100% - ${(value-1)*spacing}px)/${value}), 1fr))`;
+                renderGallery();
             }
         }
         
-        // 更新行高显示
-        function updateRowHeightDisplay() {
-            const value = rowHeightSlider.value;
-            rowHeightDisplay.textContent = `${value}px`;
-            rowHeightValue.textContent = value;
+        // 更新行数显示
+        function updateRowsDisplay() {
+            const value = rowsSlider.value;
+            rowsDisplay.textContent = value;
+            rowsValue.textContent = value;
             
-            // 更新拼图行高
+            updateMaxImages();
+            
+            // 更新拼图布局
             if (images.length > 0) {
-                gallery.style.gridAutoRows = `${value}px`;
+                renderGallery();
             }
+        }
+        
+        // 设置保存格式选择
+        function setupSaveOptions() {
+            const saveOptions = document.querySelectorAll('.save-option');
+            
+            saveOptions.forEach(option => {
+                option.addEventListener('click', () => {
+                    // 移除其他选项的选中状态
+                    saveOptions.forEach(opt => opt.classList.remove('selected'));
+                    // 设置当前选项为选中状态
+                    option.classList.add('selected');
+                    selectedSaveFormat = option.dataset.format;
+                });
+            });
         }
         
         // 事件监听
         spacingSlider.addEventListener('input', updateSpacingDisplay);
         columnsSlider.addEventListener('input', updateColumnsDisplay);
-        rowHeightSlider.addEventListener('input', updateRowHeightDisplay);
+        rowsSlider.addEventListener('input', updateRowsDisplay);
         addImagesBtn.addEventListener('click', addImages);
         clearBtn.addEventListener('click', clearAllImages);
         randomBtn.addEventListener('click', randomizeImages);
+        saveBtn.addEventListener('click', saveCollage);
+        cancelSaveBtn.addEventListener('click', () => {
+            saveModal.style.display = 'none';
+        });
+        confirmSaveBtn.addEventListener('click', executeSave);
+        
+        // 点击模态框外部关闭
+        window.addEventListener('click', (e) => {
+            if (e.target === saveModal) {
+                saveModal.style.display = 'none';
+            }
+        });
         
         // 初始化
         document.addEventListener('DOMContentLoaded', () => {
-            initSampleImages();
+            setupSaveOptions();
+            updateMaxImages();
+            renderGallery(); // 初始为空状态
         });
     </script>
 </body>
